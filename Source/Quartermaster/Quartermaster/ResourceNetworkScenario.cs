@@ -5,11 +5,11 @@ namespace Quartermaster
         public ResourceNetworkScenario()
         {
             Instance = this;
-            ResourceLinks = new ResourcePersistence();
+            ResourceLinks = new NetworkPersistence();
         }
 
         public static ResourceNetworkScenario Instance { get; private set; }
-        public ResourcePersistence  ResourceLinks { get; private set; }
+        public NetworkPersistence  ResourceLinks { get; private set; }
 
         public override void OnLoad(ConfigNode gameNode)
         {

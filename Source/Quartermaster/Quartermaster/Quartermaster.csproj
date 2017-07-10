@@ -60,21 +60,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IResourceLinkPersister.cs" />
+    <Compile Include="Persistence\Endpoint.cs" />
+    <Compile Include="Persistence\INetworkPersister.cs" />
     <Compile Include="IResourceNetworkProvider.cs" />
-    <Compile Include="ResourceLinkRepository.cs" />
+    <Compile Include="Persistence\NetworkRepository.cs" />
+    <Compile Include="Persistence\Route.cs" />
     <Compile Include="ResourceNetwork.cs" />
     <Compile Include="DynamicIngredients.cs" />
     <Compile Include="IGameData.cs" />
     <Compile Include="Ingredient.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="KSPGameData.cs" />
-    <Compile Include="ResourcePersistence.cs" />
+    <Compile Include="Persistence\NetworkPersistence.cs" />
     <Compile Include="ResourceTransporter.cs" />
     <Compile Include="SubModuleProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Recipe.cs" />
-    <Compile Include="ResourceLink.cs" />
+    <Compile Include="Persistence\ResourceLink.cs" />
     <Compile Include="ResourceNetworkScenario.cs" />
     <Compile Include="ResourcePool.cs" />
   </ItemGroup>

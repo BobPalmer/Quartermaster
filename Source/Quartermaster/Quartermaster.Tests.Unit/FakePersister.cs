@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
 
 namespace Quartermaster.Tests.Unit
 {
-    public class FakePersister : IResourceLinkPersister
+    public class FakePersister : INetworkPersister
     {
         public List<ResourceLink> GetLinkInfo()
         {
@@ -35,12 +36,59 @@ namespace Quartermaster.Tests.Unit
 
         public void DeleteLinkNode(string id)
         {
-            return;
         }
 
         public void SaveLinkNode(ResourceLink link)
         {
-            return;
+        }
+
+        public List<Route> GetRouteInfo()
+        {
+            var demoRoutes = new List<Route>();
+            demoRoutes.Add(new Route { EndpointId = "TRANS-01", RouteId = "Route-A", LinkId = "RL0017" });
+            demoRoutes.Add(new Route { EndpointId = "TRANS-01", RouteId = "Route-B", LinkId = "RL0018" });
+            demoRoutes.Add(new Route { EndpointId = "TRANS-01", RouteId = "Route-C", LinkId = "RL0019" });
+            demoRoutes.Add(new Route { EndpointId = "TRANS-01", RouteId = "Route-D", LinkId = "RL0020" });
+            demoRoutes.Add(new Route { EndpointId = "TRANS-01", RouteId = "Route-E", LinkId = "RL0021" });
+            demoRoutes.Add(new Route { EndpointId = "TRANS-01", RouteId = "Route-F", LinkId = "RL0022" });
+            demoRoutes.Add(new Route { EndpointId = "TRANS-01", RouteId = "Route-G", LinkId = "RL0023" });
+            return demoRoutes;
+        }
+
+        public void DeleteRouteNode(string id)
+        {
+        }
+
+        public void SaveRouteNode(Route route)
+        {
+        }
+
+        public List<Endpoint> GetEndpointInfo()
+        {
+            var demoEp = new List<Endpoint>();
+            demoEp.Add(new Endpoint { EndpointId = "TRANS-01", VesselId = "V-03" });
+            demoEp.Add(new Endpoint { EndpointId = "CON-01", VesselId = "V-01" });
+            demoEp.Add(new Endpoint { EndpointId = "CON-02", VesselId = "V-01" });
+            demoEp.Add(new Endpoint { EndpointId = "CON-03", VesselId = "V-01" });
+            demoEp.Add(new Endpoint { EndpointId = "CON-04", VesselId = "V-04" });
+            demoEp.Add(new Endpoint { EndpointId = "CON-05", VesselId = "K" });
+            demoEp.Add(new Endpoint { EndpointId = "CON-06", VesselId = "K" });
+            demoEp.Add(new Endpoint { EndpointId = "POOL-01", VesselId = "V-02" });
+            demoEp.Add(new Endpoint { EndpointId = "POOL-02", VesselId = "V-05" });
+            demoEp.Add(new Endpoint { EndpointId = "POOL-03", VesselId = "V-04" });
+            demoEp.Add(new Endpoint { EndpointId = "POOL-04", VesselId = "K" });
+            demoEp.Add(new Endpoint { EndpointId = "POOL-05", VesselId = "V-03" });
+            demoEp.Add(new Endpoint { EndpointId = "HOP-01", VesselId = "V-04" });
+            demoEp.Add(new Endpoint { EndpointId = "HOP-02", VesselId = "K" });
+            return demoEp;
+        }
+
+        public void DeleteEndpointNode(string id)
+        {
+        }
+
+        public void SaveEndpointNode(Endpoint link)
+        {
         }
     }
 }

@@ -30,10 +30,10 @@ namespace Quartermaster.Tests.Unit
         [TestMethod]
         public void Should_be_able_to_add_a_resource_link()
         {
-            var count = TestHelpers.Network.Repo.RecordCount();
+            var count = TestHelpers.Network.Repo.LinkCount();
             var expected = count + 1;
             TestHelpers.Network.Repo.SaveLink(new ResourceLink());
-            var actual = TestHelpers.Network.Repo.RecordCount();
+            var actual = TestHelpers.Network.Repo.LinkCount();
             Assert.AreEqual(expected,actual);
         }
 
@@ -66,15 +66,15 @@ namespace Quartermaster.Tests.Unit
         [TestMethod]
         public void Should_be_able_to_delete_a_resource_link()
         {
-            var count = TestHelpers.Network.Repo.RecordCount();
+            var count = TestHelpers.Network.Repo.LinkCount();
             var id = TestHelpers.Network.Repo.SaveLink(new ResourceLink());
             var expected = count + 1;
-            var actual = TestHelpers.Network.Repo.RecordCount();
+            var actual = TestHelpers.Network.Repo.LinkCount();
             Assert.AreEqual(expected, actual);
 
             TestHelpers.Network.Repo.DeleteLink(id);
             expected = count;
-            actual = TestHelpers.Network.Repo.RecordCount();
+            actual = TestHelpers.Network.Repo.LinkCount();
 
             Assert.AreEqual(expected, actual);
         }

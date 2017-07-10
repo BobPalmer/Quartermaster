@@ -20,7 +20,7 @@ namespace Quartermaster
         public NetworkRepository Repo
         {
             get { return _repo ?? (_repo = new 
-                    NetworkRepository(new ResourcePersistence())); }
+                    NetworkRepository(new NetworkPersistence())); }
         }
     }
 }

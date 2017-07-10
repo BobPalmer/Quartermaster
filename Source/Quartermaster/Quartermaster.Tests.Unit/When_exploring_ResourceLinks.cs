@@ -5,6 +5,69 @@ using UnityEngine;
 namespace Quartermaster.Tests.Unit
 {
     [TestClass]
+    public class When_exploring_Endpoints
+    {
+        [TestMethod]
+        public void Should_be_able_to_retrieve_an_existing_endpoint()
+        {
+            Assert.Inconclusive();
+        }
+
+        [TestMethod]
+        public void Should_be_able_to_see_if_an_endpoint_exists()
+        {
+            Assert.Inconclusive();
+
+        }
+
+        [TestMethod]
+        public void Should_be_able_to_add_an_endpoint()
+        {
+            Assert.Inconclusive();
+
+        }
+
+        [TestMethod]
+        public void Should_be_able_to_delete_an_endpoint()
+        {
+            Assert.Inconclusive();
+
+        }
+    }
+
+    [TestClass]
+    public class When_exploring_Routes
+    {
+        [TestMethod]
+        public void Should_be_able_to_retrieve_an_existing_route()
+        {
+            Assert.Inconclusive();
+
+        }
+
+        [TestMethod]
+        public void Should_be_able_to_see_if_a_route_exists()
+        {
+            Assert.Inconclusive();
+
+        }
+
+        [TestMethod]
+        public void Should_be_able_to_add_a_route()
+        {
+            Assert.Inconclusive();
+
+        }
+
+        [TestMethod]
+        public void Should_be_able_to_delete_a_route()
+        {
+            Assert.Inconclusive();
+
+        }
+    }
+
+    [TestClass]
     public class When_exploring_ResourceLinks
     {
         [TestMethod]
