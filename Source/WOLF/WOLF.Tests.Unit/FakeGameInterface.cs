@@ -14,6 +14,10 @@ namespace Quartermaster.Tests.Unit
             _vessels = new List<string>();
         }
 
+        public void RemoveVessel(string v)
+        {
+            _vessels.Remove(v);
+        }
         public void AddVessel(string v)
         {
             if(_vessels == null)

@@ -2,10 +2,7 @@
 {
     public static class TestHelpers
     {
-        public static IResourceNetworkProvider Network => _repo ?? (_repo = new FakeNetwork());
         public static IGameData Game => _game ?? (_game = new FakeGameInterface());
-
-        private static FakeNetwork _repo;
         private static FakeGameInterface _game;
 
         public static Recipe GetSampleRecipeA()
@@ -24,15 +21,15 @@
             return r;
         }
 
-        public static SubModuleProcessor GetProcessor()
+        public static ProcessWorker GetProcessor()
         {
-            return new SubModuleProcessor(Game, Network, "VESSEL","PROCESSOR");
+            return new ProcessWorker(Game, FakeNetwork.Instance, "VESSEL","PROCESSOR");
         }
 
         public static void LoadNetwork()
         { 
-            Network.Repo.ResetCache();
-            Network.Repo.SaveLink(new ResourceLink());
+            FakeNetwork.Instance.Repo.ResetCache();
+            FakeNetwork.Instance.Repo.SaveLink(new ResourceLink());
         }
     }
 }

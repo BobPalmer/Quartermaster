@@ -14,7 +14,7 @@ namespace Quartermaster.Tests.Unit
 
             gi.SetUniversalTime(300000d);
             gi.SetFlightState(true);
-            var thisProc = new SubModuleProcessor(gi,nw,"VESSEL","PROCESSOR");
+            var thisProc = new ProcessWorker(gi,nw,"VESSEL","PROCESSOR");
             var thisRecipe = new Recipe();
             thisProc.JobSlots = 2;
             thisProc.LoadedJobs[0].JobRecipe = thisRecipe;
@@ -36,7 +36,7 @@ namespace Quartermaster.Tests.Unit
 
             gi.SetUniversalTime(100000d);
             gi.SetFlightState(true);
-            var thisProc = new SubModuleProcessor(gi,nw, "VESSEL", "PROCESSOR");
+            var thisProc = new ProcessWorker(gi,nw, "VESSEL", "PROCESSOR");
             var thisRecipe = new Recipe();
             var thisPool = new ResourcePool(nw,"VESSEL", "POOL");
             thisProc.ConnectToPool(thisPool);
@@ -59,7 +59,7 @@ namespace Quartermaster.Tests.Unit
 
             gi.SetUniversalTime(200000d);
             gi.SetFlightState(false);
-            var thisProc = new SubModuleProcessor(gi,nw, "VESSEL", "PROCESSOR");
+            var thisProc = new ProcessWorker(gi,nw, "VESSEL", "PROCESSOR");
             var thisRecipe = new Recipe();
             thisProc.JobSlots = 2;
             thisProc.LoadedJobs[0].JobRecipe = thisRecipe;
@@ -81,7 +81,7 @@ namespace Quartermaster.Tests.Unit
 
             gi.SetUniversalTime(300000d);
             gi.SetFlightState(true);
-            var thisProc = new SubModuleProcessor(gi,nw, "VESSEL", "PROCESSOR");
+            var thisProc = new ProcessWorker(gi,nw, "VESSEL", "PROCESSOR");
             var thisRecipe = new Recipe();
             var thisPool = new ResourcePool(nw,"VESSEL", "POOL");
             thisProc.ConnectToPool(thisPool);

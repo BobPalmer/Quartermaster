@@ -55,10 +55,10 @@
   <ItemGroup>
     <Compile Include="FakeGameInterface.cs" />
     <Compile Include="FakeNetwork.cs" />
-    <Compile Include="FakePersister.cs" />
     <Compile Include="TestHelpers.cs" />
     <Compile Include="When_configuring_a_processor.cs" />
     <Compile Include="When_executing_a_job_on_a_processor.cs" />
+    <Compile Include="When_Exploring_Endpoints.cs" />
     <Compile Include="When_exploring_ingredients.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="When_dealing_with_dynamic_recipe.cs" />
@@ -70,9 +70,9 @@
     <Compile Include="When_exploring_transporters.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Quartermaster\Quartermaster.csproj">
+    <ProjectReference Include="..\WOLF\WOLF.csproj">
       <Project>{887AB5FE-817D-4B4A-99CD-6B9E8144329E}</Project>
-      <Name>Quartermaster</Name>
+      <Name>WOLF</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

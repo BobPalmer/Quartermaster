@@ -6,14 +6,16 @@ using System.Text;
 
 namespace Quartermaster
 {
-    public class SubModuleProcessor
+    public class ProcessWorker
     {
         private List<Job> _loadedJobs;
         private List<Recipe> _availableRecipes;
         private int _jobSlots;
         private IGameData _gameData;
         private IResourceNetworkProvider _network;
-
+        private ResourcePool _resPool;
+        private string _vesselId;
+        private string _processorId;
 
         public string VesselId
         {
@@ -27,10 +29,10 @@ namespace Quartermaster
             set { _processorId = value; }
         }
 
-        public SubModuleProcessor(string vId, string pId) : this(new KSPGameData(), ResourceNetwork.Instance, vId, pId)
+        public ProcessWorker(string vId, string pId) : this(new KSPGameData(), ResourceNetwork.Instance, vId, pId)
         { }
 
-        public SubModuleProcessor(IGameData gd, IResourceNetworkProvider net, string vId, string pId)
+        public ProcessWorker(IGameData gd, IResourceNetworkProvider net, string vId, string pId)
         {
             _gameData = gd;
             _network = net;
@@ -89,10 +91,6 @@ namespace Quartermaster
         {
             return _resPool != null;
         }
-
-        private ResourcePool _resPool;
-        private string _vesselId;
-        private string _processorId;
 
         public void ConnectToPool(ResourcePool pool)
         {

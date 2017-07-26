@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 
-namespace Quartermaster.Tests.Unit
+namespace Quartermaster.Persistence
 {
     public class FakePersister : INetworkPersister
     {

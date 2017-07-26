@@ -8,16 +8,16 @@ namespace Quartermaster.Tests.Unit
         [TestMethod]
         public void Should_be_able_to_retrieve_an_existing_resource_link()
         {
-            var link2 = TestHelpers.Network.Repo.FetchLink("RL0013");
+            var link2 = FakeNetwork.Instance.Repo.FetchLink("RL0013");
             Assert.IsNotNull(link2);
         }
 
         [TestMethod]
         public void Should_be_able_to_see_if_a_resource_link_exists()
         {
-            var link1 = TestHelpers.Network.Repo.FetchLink("BADLINK");
+            var link1 = FakeNetwork.Instance.Repo.FetchLink("BADLINK");
             Assert.IsNull(link1);
-            var link2 = TestHelpers.Network.Repo.FetchLink("RL0013");
+            var link2 = FakeNetwork.Instance.Repo.FetchLink("RL0013");
             Assert.IsNotNull(link2);
         }
 
@@ -30,10 +30,10 @@ namespace Quartermaster.Tests.Unit
         [TestMethod]
         public void Should_be_able_to_add_a_resource_link()
         {
-            var count = TestHelpers.Network.Repo.LinkCount();
+            var count = FakeNetwork.Instance.Repo.LinkCount();
             var expected = count + 1;
-            TestHelpers.Network.Repo.SaveLink(new ResourceLink());
-            var actual = TestHelpers.Network.Repo.LinkCount();
+            FakeNetwork.Instance.Repo.SaveLink(new ResourceLink());
+            var actual = FakeNetwork.Instance.Repo.LinkCount();
             Assert.AreEqual(expected,actual);
         }
 
@@ -48,7 +48,7 @@ namespace Quartermaster.Tests.Unit
         public void Should_create_a_link_id_automatically_on_save()
         {
             var link = new ResourceLink();
-            TestHelpers.Network.Repo.SaveLink(link);
+            FakeNetwork.Instance.Repo.SaveLink(link);
             Assert.IsFalse(string.IsNullOrEmpty(link.LinkId));
         }
 
@@ -57,7 +57,7 @@ namespace Quartermaster.Tests.Unit
         {
             var link = new ResourceLink();
             link.LinkId = "TEST";
-            TestHelpers.Network.Repo.SaveLink(link);
+            FakeNetwork.Instance.Repo.SaveLink(link);
             var expected = "TEST";
             var actual = link.LinkId;
             Assert.AreEqual(expected,actual);
@@ -66,15 +66,15 @@ namespace Quartermaster.Tests.Unit
         [TestMethod]
         public void Should_be_able_to_delete_a_resource_link()
         {
-            var count = TestHelpers.Network.Repo.LinkCount();
-            var id = TestHelpers.Network.Repo.SaveLink(new ResourceLink());
+            var count = FakeNetwork.Instance.Repo.LinkCount();
+            var id = FakeNetwork.Instance.Repo.SaveLink(new ResourceLink());
             var expected = count + 1;
-            var actual = TestHelpers.Network.Repo.LinkCount();
+            var actual = FakeNetwork.Instance.Repo.LinkCount();
             Assert.AreEqual(expected, actual);
 
-            TestHelpers.Network.Repo.DeleteLink(id);
+            FakeNetwork.Instance.Repo.DeleteLink(id);
             expected = count;
-            actual = TestHelpers.Network.Repo.LinkCount();
+            actual = FakeNetwork.Instance.Repo.LinkCount();
 
             Assert.AreEqual(expected, actual);
         }
@@ -83,7 +83,7 @@ namespace Quartermaster.Tests.Unit
         public void Should_be_able_to_calculate_resource_totals_for_an_endpoint()
         {
             var expected = 2;
-            var actual = TestHelpers.Network.Repo.GetResourceQuantity("POOL-03", "LFO");
+            var actual = FakeNetwork.Instance.Repo.GetResourceQuantity("POOL-03", "LFO");
             Assert.AreEqual(expected,actual);
         }
 

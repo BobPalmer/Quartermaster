@@ -20,14 +20,20 @@ namespace Quartermaster
             set { _poolId = value; }
         }
 
-
         public ResourcePool(IResourceNetworkProvider net, string vId, string pId)
         {
             _network = net;
             _poolId = pId;
             _vesselId = vId;
-        }
 
+            var ep = new Endpoint
+            {
+                EndpointId = _poolId,
+                VesselId = _vesselId
+            };
+
+            _network.Instance.Repo.SaveEndpoint(ep);
+        }
 
         public ResourcePool(string vId, string pId) : this(ResourceNetwork.Instance,vId, pId)
         { }
@@ -48,7 +54,7 @@ namespace Quartermaster
             for (int i = 0; i < count; ++i)
             {
                 var ing = iList[i];
-                var amount = _network.Repo.GetResourceQuantity(PoolId, ing.ResourceName);
+                var amount = _network.Instance.Repo.GetResourceQuantity(PoolId, ing.ResourceName);
                 if(amount < ing.Quantity)
                     return true;
             }

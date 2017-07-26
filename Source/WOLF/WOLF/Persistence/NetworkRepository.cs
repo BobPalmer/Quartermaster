@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Quartermaster
 {
-    public class NetworkRepository
+    public class NetworkRepository 
     {
         //Backing variables
         private List<ResourceLink> _networkLinks;
@@ -211,6 +211,19 @@ namespace Quartermaster
             return ep;
         }
 
+        public bool EndpointExists(string id)
+        {
+            var count = Endpoints.Count;
+            for (int i = 0; i < count; ++i)
+            {
+                if (Endpoints[i].EndpointId == id)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public string SaveEndpoint(Endpoint ep)
         {
             var count = Endpoints.Count;
@@ -232,7 +245,6 @@ namespace Quartermaster
             _persister.SaveEndpointNode(ep);
             return id;
         }
-
 
         public int LinkCount()
         {
