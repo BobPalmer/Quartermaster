@@ -10,10 +10,12 @@ namespace Quartermaster
         private List<Route> _routes;
         private List<Endpoint> _endpoints;
         private INetworkPersister _persister;
+        private IGameData _game;
 
-        public NetworkRepository(INetworkPersister persister)
+        public NetworkRepository(INetworkPersister persister, IGameData game)
         {
             _persister = persister;
+            _game = game;
         }
 
         public void ResetCache()
@@ -121,7 +123,6 @@ namespace Quartermaster
             return id;
         }
 
-
         public void DeleteRoute(string id)
         {
             var count = Routes.Count;
@@ -180,7 +181,6 @@ namespace Quartermaster
             _persister.SaveRouteNode(route);
             return id;
         }
-
 
         public void DeleteEndpoint(string id)
         {
@@ -278,5 +278,90 @@ namespace Quartermaster
             }
             return amount;
         }
+
+        public class PoolData
+        {
+            public ResourcePool Pool { get; set; }
+            public string VesselName { get; set; }
+            public string VesselSituation { get; set; }
+            public string BodyName { get; set; }
+            public List<PoolDetails> ResourceList { get; private set; }
+
+            public PoolData()
+            {
+                ResourceList = new List<PoolDetails>();
+            }
+        }
+
+        public class PoolDetails
+        {
+            public string ResourceName { get; set; }
+            public int Incoming { get; set; }
+            public int Outgoing { get; set; }
+            public int Available { get; set; }
+        }
+
+        public List<PoolData> GetPoolDisplayList()
+        {
+            var poolList = new List<PoolData>();
+            var eCount = Endpoints.Count;
+            for (int e = 0; e < eCount; ++e)
+            {
+                var ep = Endpoints[e];
+                if (ep.Type == EndpointTypes.Pool)
+                {
+                    var pd = new PoolData();
+                    pd.VesselName = _game.GetVesselName(ep.VesselId);
+                    pd.VesselSituation = "Orbiting";
+                    if (ep.IsLanded)
+                        pd.VesselSituation = "Landed";
+                    pd.BodyName = _game.GetPlanetName(ep.MainBodyIndex);
+                    pd.ResourceList.AddRange(GetPoolDisplayDetails(ep.EndpointId));
+                    poolList.Add(pd);
+                }
+            }
+            return poolList;
+        }
+
+        public List<PoolDetails> GetPoolDisplayDetails(string endpointId)
+        {
+            var resData = new List<PoolDetails>();
+            var lCount = NetworkLinks.Count;
+            for (int l = 0; l < lCount; ++l)
+            {
+                var link = NetworkLinks[l];
+                if (link.SourceId != endpointId && link.DestinationId != endpointId)
+                    continue;
+
+                var dCount = resData.Count;
+                bool found = false;
+                for (int d = 0; d < dCount; ++d)
+                {
+                    var thisDet = resData[d];
+                    if (thisDet.ResourceName == link.ResourceName)
+                    {
+                        found = true;
+                        if (link.SourceId == endpointId)
+                            thisDet.Outgoing += link.Quantity;
+                        if (link.DestinationId == endpointId)
+                            thisDet.Incoming += link.Quantity;
+                        thisDet.Available = thisDet.Incoming - thisDet.Outgoing;
+                    }
+                }
+                if (!found)
+                {
+                    var newDet = new PoolDetails();
+                    newDet.ResourceName = link.ResourceName;
+                    if (link.SourceId == endpointId)
+                        newDet.Outgoing = link.Quantity;
+                    if (link.DestinationId == endpointId)
+                        newDet.Incoming = link.Quantity;
+                    newDet.Available = newDet.Incoming - newDet.Outgoing;
+                    resData.Add(newDet);
+                }
+            }
+            return resData;
+        }
     }
 }
+ 

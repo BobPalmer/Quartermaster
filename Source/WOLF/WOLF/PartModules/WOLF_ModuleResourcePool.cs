@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Quartermaster.PartModules
@@ -24,7 +25,8 @@ namespace Quartermaster.PartModules
             if (String.IsNullOrEmpty(PoolId))
                 PoolId = Guid.NewGuid().ToString();
 
-            return new ResourcePool(vessel.id.ToString(),PoolId);
+            vessel.UpdateLandedSplashed();
+            return new ResourcePool(vessel.id.ToString(),PoolId,vessel.LandedOrSplashed,vessel.mainBody.flightGlobalsIndex,EndpointTypes.Pool);
         }
     }
 }

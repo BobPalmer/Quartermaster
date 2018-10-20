@@ -38,7 +38,7 @@ namespace Quartermaster.Tests.Unit
             gi.SetFlightState(true);
             var thisProc = new ProcessWorker(gi,nw, "VESSEL", "PROCESSOR");
             var thisRecipe = new Recipe();
-            var thisPool = new ResourcePool(nw,"VESSEL", "POOL");
+            var thisPool = new ResourcePool(nw,"VESSEL", "POOL", true, 0,EndpointTypes.Pool);
             thisProc.ConnectToPool(thisPool);
             thisProc.JobSlots = 2;
             thisProc.LoadedJobs[1].JobRecipe = thisRecipe;
@@ -83,7 +83,7 @@ namespace Quartermaster.Tests.Unit
             gi.SetFlightState(true);
             var thisProc = new ProcessWorker(gi,nw, "VESSEL", "PROCESSOR");
             var thisRecipe = new Recipe();
-            var thisPool = new ResourcePool(nw,"VESSEL", "POOL");
+            var thisPool = new ResourcePool(nw,"VESSEL", "POOL", true, 0,EndpointTypes.Pool);
             thisProc.ConnectToPool(thisPool);
             thisProc.JobSlots = 2;
             thisProc.LoadedJobs[0].JobRecipe = thisRecipe;

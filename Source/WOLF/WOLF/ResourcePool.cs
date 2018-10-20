@@ -6,6 +6,10 @@ namespace Quartermaster
     {
         private string _vesselId;
         private string _poolId;
+        private bool _isLanded;
+        private int _mainBody;
+        private EndpointTypes _type;
+
         private IResourceNetworkProvider _network;
 
         public string VesselId
@@ -20,22 +24,46 @@ namespace Quartermaster
             set { _poolId = value; }
         }
 
-        public ResourcePool(IResourceNetworkProvider net, string vId, string pId)
+        public int MainBodyIndex
+        {
+            get { return _mainBody; }
+            set { _mainBody = value; }
+        }
+
+        public bool IsLanded
+        {
+            get { return _isLanded; }
+            set { _isLanded = value; }
+        }
+
+        public EndpointTypes Type
+        {
+            get { return _type; }
+            set { _type = value; }
+        }
+
+        public ResourcePool(IResourceNetworkProvider net, string vId, string pId, bool landed, int idx, EndpointTypes type)
         {
             _network = net;
             _poolId = pId;
             _vesselId = vId;
+            _mainBody = idx;
+            _isLanded = landed;
+            _type = type;
 
             var ep = new Endpoint
             {
                 EndpointId = _poolId,
-                VesselId = _vesselId
+                MainBodyIndex = _mainBody,
+                IsLanded = _isLanded,
+                VesselId = _vesselId,
+                Type = _type
             };
 
             _network.Instance.Repo.SaveEndpoint(ep);
         }
 
-        public ResourcePool(string vId, string pId) : this(ResourceNetwork.Instance,vId, pId)
+        public ResourcePool(string vId, string pId, bool landed, int idx, EndpointTypes type) : this(ResourceNetwork.Instance,vId, pId,landed,idx,type)
         { }
 
         public bool CheckResources(Recipe r)

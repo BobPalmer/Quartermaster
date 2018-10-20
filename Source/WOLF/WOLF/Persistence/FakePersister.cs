@@ -65,20 +65,20 @@ namespace Quartermaster.Persistence
         public List<Endpoint> GetEndpointInfo()
         {
             var demoEp = new List<Endpoint>();
-            demoEp.Add(new Endpoint { EndpointId = "TRANS-01", VesselId = "V-03" });
-            demoEp.Add(new Endpoint { EndpointId = "CON-01", VesselId = "V-01" });
-            demoEp.Add(new Endpoint { EndpointId = "CON-02", VesselId = "V-01" });
-            demoEp.Add(new Endpoint { EndpointId = "CON-03", VesselId = "V-01" });
-            demoEp.Add(new Endpoint { EndpointId = "CON-04", VesselId = "V-04" });
-            demoEp.Add(new Endpoint { EndpointId = "CON-05", VesselId = "K" });
-            demoEp.Add(new Endpoint { EndpointId = "CON-06", VesselId = "K" });
-            demoEp.Add(new Endpoint { EndpointId = "POOL-01", VesselId = "V-02" });
-            demoEp.Add(new Endpoint { EndpointId = "POOL-02", VesselId = "V-05" });
-            demoEp.Add(new Endpoint { EndpointId = "POOL-03", VesselId = "V-04" });
-            demoEp.Add(new Endpoint { EndpointId = "POOL-04", VesselId = "K" });
-            demoEp.Add(new Endpoint { EndpointId = "POOL-05", VesselId = "V-03" });
-            demoEp.Add(new Endpoint { EndpointId = "HOP-01", VesselId = "V-04" });
-            demoEp.Add(new Endpoint { EndpointId = "HOP-02", VesselId = "K" });
+            demoEp.Add(new Endpoint { EndpointId = "TRANS-01", VesselId = "30000003-0000-0000-0000-000000000000", IsLanded = false, MainBodyIndex = 2, Type = EndpointTypes.Transport});
+            demoEp.Add(new Endpoint { EndpointId = "CON-01", VesselId = "10000001-0000-0000-0000-000000000000", IsLanded = true, MainBodyIndex = 2, Type = EndpointTypes.Converter});
+            demoEp.Add(new Endpoint { EndpointId = "CON-02", VesselId = "10000001-0000-0000-0000-000000000000", IsLanded = true, MainBodyIndex = 2, Type = EndpointTypes.Converter });
+            demoEp.Add(new Endpoint { EndpointId = "CON-03", VesselId = "10000001-0000-0000-0000-000000000000", IsLanded = true, MainBodyIndex = 2, Type = EndpointTypes.Converter });
+            demoEp.Add(new Endpoint { EndpointId = "CON-04", VesselId = "40000004-0000-0000-0000-000000000000", IsLanded = false, MainBodyIndex = 2, Type = EndpointTypes.Converter });
+            demoEp.Add(new Endpoint { EndpointId = "CON-05", VesselId = "00000000-0000-0000-0000-000000000000", IsLanded = true, MainBodyIndex = 1, Type = EndpointTypes.Converter });
+            demoEp.Add(new Endpoint { EndpointId = "CON-06", VesselId = "00000000-0000-0000-0000-000000000000", IsLanded = true, MainBodyIndex = 1, Type = EndpointTypes.Converter });
+            demoEp.Add(new Endpoint { EndpointId = "POOL-01", VesselId = "20000002-0000-0000-0000-000000000000", IsLanded = true, MainBodyIndex = 2, Type = EndpointTypes.Pool });
+            demoEp.Add(new Endpoint { EndpointId = "POOL-02", VesselId = "50000005-0000-0000-0000-000000000000", IsLanded = false, MainBodyIndex = 2, Type = EndpointTypes.Pool });
+            demoEp.Add(new Endpoint { EndpointId = "POOL-03", VesselId = "40000004-0000-0000-0000-000000000000", IsLanded = false, MainBodyIndex = 2, Type = EndpointTypes.Pool });
+            demoEp.Add(new Endpoint { EndpointId = "POOL-04", VesselId = "00000000-0000-0000-0000-000000000000", IsLanded = true, MainBodyIndex = 1, Type = EndpointTypes.Pool });
+            demoEp.Add(new Endpoint { EndpointId = "POOL-05", VesselId = "30000003-0000-0000-0000-000000000000", IsLanded = false, MainBodyIndex = 2, Type = EndpointTypes.Pool });
+            demoEp.Add(new Endpoint { EndpointId = "HOP-01", VesselId = "40000004-0000-0000-0000-000000000000", IsLanded = false, MainBodyIndex = 2, Type = EndpointTypes.Hopper });
+            demoEp.Add(new Endpoint { EndpointId = "HOP-02", VesselId = "00000000-0000-0000-0000-000000000000", IsLanded = true, MainBodyIndex = 1, Type = EndpointTypes.Hopper });
             return demoEp;
         }
 

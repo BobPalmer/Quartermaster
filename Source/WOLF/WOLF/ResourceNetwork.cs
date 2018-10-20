@@ -15,8 +15,8 @@ namespace Quartermaster
                                                   (_instance = new GameObject("ResourceNetwork").AddComponent<ResourceNetwork>());
 
         public NetworkRepository Repo => _repo ??
-//TODO:  Fix this for PROD!              (_repo = new NetworkRepository(new NetworkPersistence()));
-                                         (_repo = new NetworkRepository(new FakePersister()));
+//TODO:  Fix this for PROD!              (_repo = new NetworkRepository(new NetworkPersistence(),new KSPGameData()));
+                                         (_repo = new NetworkRepository(new FakePersister(),new KSPGameData()));
 
         IResourceNetworkProvider IResourceNetworkProvider.Instance => Instance;
     }

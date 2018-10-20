@@ -8,7 +8,7 @@ namespace Quartermaster.Tests.Unit
         private static FakeNetwork _instance;
 
         public NetworkRepository Repo => _repo ?? 
-            (_repo = new NetworkRepository(new FakePersister()));
+            (_repo = new NetworkRepository(new FakePersister(),new FakeGameInterface()));
 
         public static FakeNetwork Instance => _instance ??
                                                   (_instance = new FakeNetwork());

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Quartermaster.Tests.Unit
@@ -8,6 +9,8 @@ namespace Quartermaster.Tests.Unit
         private bool _isFlight;
         private bool _isEditor;
         private List<string> _vessels;
+
+
 
         public void ClearVesselList()
         {
@@ -61,6 +64,32 @@ namespace Quartermaster.Tests.Unit
         public List<string> GetAllVesselIds()
         {
             throw new System.NotImplementedException();
+        }
+
+        public string GetVesselName(string id)
+        {
+            try
+            {
+                var g = new Guid(id); //This should throw an exception if our id is invalid
+                return "V-" + id.Substring(0, 4);
+            }
+            catch (Exception)
+            {
+                return "??Unknown??";
+            }
+        }
+
+        public string GetPlanetName(int idx)
+        {
+            switch (idx)
+            {
+                case 1:
+                    return "Kerbin";
+                case 2:
+                    return "Mun";
+                default:
+                    return "PLANET_" + idx;
+            }
         }
     }
 }

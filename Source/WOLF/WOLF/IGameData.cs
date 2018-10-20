@@ -8,5 +8,7 @@ namespace Quartermaster
         bool LoadedSceneIsFlight();
         bool LoadedSceneIsEditor();
         List<string> GetAllVesselIds();
+        string GetVesselName(string id);
+        string GetPlanetName(int idx);
     }
 }

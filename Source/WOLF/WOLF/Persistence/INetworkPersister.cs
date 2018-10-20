@@ -16,6 +16,5 @@ namespace Quartermaster
         List<Endpoint> GetEndpointInfo();
         void DeleteEndpointNode(string id);
         void SaveEndpointNode(Endpoint link);
-
     }
 }

@@ -27,7 +27,7 @@ namespace Quartermaster.Tests.Unit
             var nw = new FakeNetwork();
             var thisProc = TestHelpers.GetProcessor();
             var thisRecipe = TestHelpers.GetSampleRecipeA();
-            var thisPool = new ResourcePool(nw,"VESSEL","POOL");
+            var thisPool = new ResourcePool(nw,"VESSEL","POOL",true,0,EndpointTypes.Pool);
             thisProc.ConnectToPool(thisPool);
             thisProc.AddAvailableRecipe(thisRecipe);
             var expected = true;
@@ -42,7 +42,7 @@ namespace Quartermaster.Tests.Unit
             TestHelpers.LoadNetwork();
             var thisProc = TestHelpers.GetProcessor();
             var thisRecipe = TestHelpers.GetSampleRecipeB();
-            var thisPool = new ResourcePool(nw,"VESSEL", "POOL");
+            var thisPool = new ResourcePool(nw,"VESSEL", "POOL", true, 0,EndpointTypes.Pool);
             thisProc.ConnectToPool(thisPool);
             thisProc.AddAvailableRecipe(thisRecipe);
             var expected = false;
@@ -56,7 +56,7 @@ namespace Quartermaster.Tests.Unit
         {
             var nw = new FakeNetwork();
             var thisRecipe = new Recipe();
-            var thisPool = new ResourcePool(nw,"VESSEL", "POOL");
+            var thisPool = new ResourcePool(nw,"VESSEL", "POOL", true, 0,EndpointTypes.Pool);
             var expected = true;
             var actual = thisPool.CheckResources(thisRecipe);
             Assert.AreEqual(expected,actual);
@@ -174,7 +174,7 @@ namespace Quartermaster.Tests.Unit
         {
             var nw = new FakeNetwork();
             var thisProcessor = TestHelpers.GetProcessor();
-            var thisPool = new ResourcePool(nw,"VESSEL", "POOL");
+            var thisPool = new ResourcePool(nw,"VESSEL", "POOL", true, 0,EndpointTypes.Pool);
             thisProcessor.ConnectToPool(thisPool);
             var expected = true;
             var actual = thisProcessor.IsConnectedToPool();

@@ -121,6 +121,9 @@ namespace Quartermaster
                     var rNode = new ConfigNode("ENDPOINT_DATA");
                     rNode.AddValue("EndpointId", r.EndpointId);
                     rNode.AddValue("VesselId", r.VesselId);
+                    rNode.AddValue("MainBodyIndex", r.MainBodyIndex);
+                    rNode.AddValue("IsLanded", r.IsLanded);
+                    rNode.AddValue("Type", (int)r.Type);
                     ScenarioNode.AddNode(rNode);
                 }
             }
@@ -343,6 +346,9 @@ namespace Quartermaster
             }
             newEp.EndpointId = saveLink.EndpointId;
             newEp.VesselId = saveLink.VesselId;
+            newEp.Type = saveLink.Type;
+            newEp.IsLanded = saveLink.IsLanded;
+            newEp.MainBodyIndex = saveLink.MainBodyIndex;
         }
     }
 }
