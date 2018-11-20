@@ -41,10 +41,10 @@ namespace WOLF.Tests.Unit
             negotiator.Endpoints.Add(endpointA);
             negotiator.Endpoints.Add(endpointB);
 
-            var persister = new ScenarioPersister();
+            var persister = new ScenarioPersister(negotiator);
             var configNode = new ConfigNode();
 
-            persister.OnSave(configNode, negotiator);
+            persister.OnSave(configNode);
 
             var expectedNodeName = "WOLF_DATA";
             Assert.True(configNode.HasNode(expectedNodeName));

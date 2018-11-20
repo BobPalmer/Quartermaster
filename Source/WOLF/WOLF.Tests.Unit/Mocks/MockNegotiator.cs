@@ -73,6 +73,16 @@ namespace WOLF.Tests.Unit.Mocks
             return new OkNegotiationResult<Contract>(contract);
         }
 
+        public void OnLoad(ConfigNode node)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnSave(ConfigNode node)
+        {
+            throw new NotImplementedException();
+        }
+
         public void RemoveEndpoint(string endpointId)
         {
             var endpoint = Endpoints.Where(e => e.Id == endpointId).FirstOrDefault();

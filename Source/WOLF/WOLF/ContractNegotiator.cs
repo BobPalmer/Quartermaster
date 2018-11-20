@@ -73,19 +73,19 @@ namespace WOLF
 
         public void OnLoad(ConfigNode node)
         {
-            var endpointNodes = node.GetNodes(_endpointNodeName);
+            //var endpointNodes = node.GetNodes(_endpointNodeName);
 
-            ConfigNode endpointNode;
-            IEndpoint endpoint;
-            for (int i = 0; i < endpointNodes.Length; i++)
-            {
-                endpointNode = endpointNodes[i];
-                switch (endpointNode.GetValue("Type"))
-                {
-                    case "Processor":
-                        endpoint = new ProcessorEndpoint { Id = }
-                }
-            }
+            //ConfigNode endpointNode;
+            //IEndpoint endpoint;
+            //for (int i = 0; i < endpointNodes.Length; i++)
+            //{
+            //    endpointNode = endpointNodes[i];
+            //    switch (endpointNode.GetValue("Type"))
+            //    {
+            //        case "Processor":
+            //            endpoint = new ProcessorEndpoint { Id = }
+            //    }
+            //}
         }
 
         public void OnSave(ConfigNode node)

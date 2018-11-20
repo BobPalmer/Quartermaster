@@ -49,6 +49,16 @@ namespace WOLF
             return Math.Max(0d, incoming - outgoing);
         }
 
+        public void OnLoad(ConfigNode node)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OnSave(ConfigNode node)
+        {
+            throw new NotImplementedException();
+        }
+
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
         protected virtual void Dispose(bool disposing)
