@@ -4,7 +4,7 @@ namespace WOLF
 {
     public interface IRecipe
     {
-        Dictionary<string, RecipeIngredient> InputIngredients { get; }
-        Dictionary<string, RecipeIngredient> OutputIngredients { get; }
+        Dictionary<string, int> InputIngredients { get; }
+        Dictionary<string, int> OutputIngredients { get; }
     }
 }

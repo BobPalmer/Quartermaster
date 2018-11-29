@@ -1,32 +1,48 @@
-﻿namespace WOLF
+﻿using System;
+using System.Collections.Generic;
+
+namespace WOLF
 {
     public class ScenarioPersister : IPersistenceAware
     {
-        private IContractNegotiator _contractNegotiator;
-        private static string _scenarioNodeName = "WOLF_DATA";
-
-        public ScenarioPersister(IContractNegotiator contractNegotiator)
-        {
-            _contractNegotiator = contractNegotiator;
-        }
+        public static readonly string SCENARIO_NODE_NAME = "WOLF_DATA";
+        public List<IDepot> Depots = new List<IDepot>();
 
         public void OnLoad(ConfigNode node)
         {
-            if (node.HasNode(_scenarioNodeName))
+            if (node.HasNode(SCENARIO_NODE_NAME))
             {
-                var scenarioNode = node.GetNode(_scenarioNodeName);
+                var wolfNode = node.GetNode(SCENARIO_NODE_NAME);
+                var depotNodes = wolfNode.GetNodes();
+                foreach (var depotNode in depotNodes)
+                {
+                    var bodyValue = depotNode.GetValue("Body");
+                    var biomeValue = depotNode.GetValue("Biome");
+                    var situationValue = (Vessel.Situations)Enum.Parse(typeof(Vessel.Situations), depotNode.GetValue("Situation"));
 
-                _contractNegotiator.OnLoad(scenarioNode);
+                    var depot = new Depot(bodyValue, biomeValue, situationValue);
+                    depot.OnLoad(depotNode);
+                    Depots.Add(depot);
+                }
             }
         }
 
         public void OnSave(ConfigNode node)
         {
-            var scenarioNode = node.HasNode(_scenarioNodeName)
-                ? node.GetNode(_scenarioNodeName)
-                : node.AddNode(_scenarioNodeName);
+            ConfigNode wolfNode;
+            if (!node.HasNode("WOLF_DATA"))
+            {
+                wolfNode = node.AddNode(SCENARIO_NODE_NAME);
+            }
+            else
+            {
+                wolfNode = node.GetNode(SCENARIO_NODE_NAME);
+            }
 
-            _contractNegotiator.OnSave(scenarioNode);
+            foreach (var depot in Depots)
+            {
+                depot.OnSave(wolfNode);
+            }
         }
     }
 }

@@ -1,25 +1,20 @@
-﻿namespace WOLF
+﻿using System.Collections.Generic;
+
+namespace WOLF
 {
     public abstract class NegotiationResult { }
 
     public class FailedNegotiationResult : NegotiationResult
     {
-        public string Reason { get; private set; }
+        public Dictionary<string, int> MissingResources { get; private set; }
 
-        public FailedNegotiationResult(string reason)
+        public FailedNegotiationResult(Dictionary<string, int> missingResources)
         {
-            Reason = reason;
+            MissingResources = missingResources;
         }
     }
 
-    public class OkNegotiationResult<T> : NegotiationResult
-        where T: IContract
+    public class OkNegotiationResult : NegotiationResult
     {
-        public T Contract { get; private set; }
-
-        public OkNegotiationResult(T contract)
-        {
-            Contract = contract;
-        }
     }
 }
