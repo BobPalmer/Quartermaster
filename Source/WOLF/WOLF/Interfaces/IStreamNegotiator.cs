@@ -1,6 +1,6 @@
 ﻿namespace WOLF
 {
-    public interface IContractNegotiator
+    public interface IStreamNegotiator
     {
         NegotiationResult Negotiate(IRecipe recipe);
     }

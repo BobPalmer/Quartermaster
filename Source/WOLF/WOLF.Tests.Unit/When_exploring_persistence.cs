@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WOLF.Tests.Unit.Mocks;
 using Xunit;
 
@@ -16,9 +14,8 @@ namespace WOLF.Tests.Unit
             var configNode = new ConfigNode();
             var expectedBody = "Mun";
             var expectedBiome = "East Crater";
-            var expectedSituation = Vessel.Situations.LANDED;
-            var depot = new Depot(expectedBody, expectedBiome, expectedSituation);
-            var persister = new ScenarioPersister();
+            var depot = new Depot(expectedBody, expectedBiome);
+            var persister = new TestPersister();
             persister.Depots.Add(depot);
 
             var expectedResource = "ElectricCharge";
@@ -44,13 +41,10 @@ namespace WOLF.Tests.Unit
             var depotNode = depotNodes.First();
             Assert.True(depotNode.HasValue("Body"));
             Assert.True(depotNode.HasValue("Biome"));
-            Assert.True(depotNode.HasValue("Situation"));
             var bodyValue = depotNode.GetValue("Body");
             var biomeVaue = depotNode.GetValue("Biome");
-            var situationValue = (Vessel.Situations)Enum.Parse(typeof(Vessel.Situations), depotNode.GetValue("Situation"));
             Assert.Equal(expectedBody, bodyValue);
             Assert.Equal(expectedBiome, biomeVaue);
-            Assert.Equal(expectedSituation, situationValue);
             Assert.True(depotNode.HasNode("RESOURCE"));
             var resourceNode = depotNode.GetNodes().First();
             Assert.True(resourceNode.HasValue("ResourceName"));
@@ -68,10 +62,9 @@ namespace WOLF.Tests.Unit
         public void Should_be_able_to_load_depot_from_persistence()
         {
             var configNode = TestConfigNode.Node;
-            var persister = new ScenarioPersister();
+            var persister = new TestPersister();
             var expectedBody = "Mun";
             var expectedBiome = "East Crater";
-            var expectedSituation = Vessel.Situations.LANDED;
             var expectedResourceName = "ElectricCharge";
             var expectedIncomingQuantity = 37;
             var expectedOutgoingQuantity = 12;
@@ -87,7 +80,6 @@ namespace WOLF.Tests.Unit
             var depot = persister.Depots.First();
             Assert.Equal(expectedBody, depot.Body);
             Assert.Equal(expectedBiome, depot.Biome);
-            Assert.Equal(expectedSituation, depot.Situation);
             var result = depot.NegotiateConsumer(consumedResources);
             Assert.IsType<OkNegotiationResult>(result);
         }

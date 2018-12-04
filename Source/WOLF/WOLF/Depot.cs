@@ -2,7 +2,7 @@
 
 namespace WOLF
 {
-    public class Depot : IDepot, IContractNegotiator
+    public class Depot : IDepot, IStreamNegotiator
     {
         protected Dictionary<string, IResourceStream> _resourceStreams = new Dictionary<string, IResourceStream>();
         protected static readonly string _depotNodeName = "DEPOT";
@@ -10,13 +10,11 @@ namespace WOLF
 
         public string Body { get; private set; }
         public string Biome { get; private set; }
-        public Vessel.Situations Situation { get; private set; }
 
-        public Depot(string body, string biome, Vessel.Situations situation)
+        public Depot(string body, string biome)
         {
             Body = body;
             Biome = biome;
-            Situation = Situation;
         }
 
         public NegotiationResult Negotiate(IRecipe recipe)
@@ -107,9 +105,12 @@ namespace WOLF
 
         public void OnSave(ConfigNode node)
         {
+            var depotNode = node.AddNode(_depotNodeName);
+            depotNode.AddValue("Body", Body);
+            depotNode.AddValue("Biome", Biome);
+
             if (_resourceStreams.Count > 0)
             {
-                var depotNode = node.AddNode(_depotNodeName);
                 foreach (var stream in _resourceStreams)
                 {
                     var streamNode = depotNode.AddNode(_streamNodeName);

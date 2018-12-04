@@ -2,10 +2,12 @@
 
 namespace WOLF
 {
-    public class StreamAlreadyCreatedException : Exception
+    public class DepotDoesNotExistException : Exception
     {
-        public StreamAlreadyCreatedException(string resourceName)
-            : base("A stream for " + resourceName + " has already been created.")
+        private static readonly string EXCEPTION_MESSAGE = "A WOLF depot has not yet been established for {0} in {1}.";
+
+        public DepotDoesNotExistException(string body, string biome)
+            : base(string.Format(EXCEPTION_MESSAGE, body, biome))
         {
         }
     }

@@ -4,7 +4,7 @@ namespace WOLF.Tests.Unit.Mocks
 {
     public class TestDepot : Depot
     {
-        public TestDepot() : base("Mun", "East Crater", Vessel.Situations.LANDED)
+        public TestDepot() : base("Mun", "East Crater")
         {
         }
 

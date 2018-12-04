@@ -72,9 +72,11 @@
   <ItemGroup>
     <Compile Include="Mocks\TestConfigNode.cs" />
     <Compile Include="Mocks\TestDepot.cs" />
+    <Compile Include="Mocks\TestPersister.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="When_exploring_depots.cs" />
     <Compile Include="When_exploring_persistence.cs" />
+    <Compile Include="When_exploring_the_depot_registry.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

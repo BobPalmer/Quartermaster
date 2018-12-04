@@ -1,12 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace WOLF
 {
-    public class ScenarioPersister : IPersistenceAware
+    public class ScenarioPersister : IDepotRegistry
     {
         public static readonly string SCENARIO_NODE_NAME = "WOLF_DATA";
-        public List<IDepot> Depots = new List<IDepot>();
+        protected List<IDepot> _depots { get; private set; } = new List<IDepot>();
+
+        public IDepot AddDepot(string body, string biome)
+        {
+            if (HasDepot(body, biome))
+            {
+                return GetDepot(body, biome);
+            }
+
+            var depot = new Depot(body, biome);
+            _depots.Add(depot);
+
+            return depot;
+        }
+
+        public bool HasDepot(string body, string biome)
+        {
+            return _depots.Any(d => d.Body == body && d.Biome == biome);
+        }
+
+        public IDepot GetDepot(string body, string biome)
+        {
+            var depot = _depots.Where(d => d.Body == body && d.Biome == biome).FirstOrDefault();
+
+            if (depot == null)
+            {
+                throw new DepotDoesNotExistException(body, biome);
+            }
+
+            return depot;
+        }
 
         public void OnLoad(ConfigNode node)
         {
@@ -18,11 +48,10 @@ namespace WOLF
                 {
                     var bodyValue = depotNode.GetValue("Body");
                     var biomeValue = depotNode.GetValue("Biome");
-                    var situationValue = (Vessel.Situations)Enum.Parse(typeof(Vessel.Situations), depotNode.GetValue("Situation"));
 
-                    var depot = new Depot(bodyValue, biomeValue, situationValue);
+                    var depot = new Depot(bodyValue, biomeValue);
                     depot.OnLoad(depotNode);
-                    Depots.Add(depot);
+                    _depots.Add(depot);
                 }
             }
         }
@@ -39,7 +68,7 @@ namespace WOLF
                 wolfNode = node.GetNode(SCENARIO_NODE_NAME);
             }
 
-            foreach (var depot in Depots)
+            foreach (var depot in _depots)
             {
                 depot.OnSave(wolfNode);
             }
