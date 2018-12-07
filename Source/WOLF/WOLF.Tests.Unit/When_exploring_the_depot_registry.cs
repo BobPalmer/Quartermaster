@@ -35,6 +35,12 @@ namespace WOLF.Tests.Unit
         }
 
         [Fact]
+        public void Can_find_all_depots()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        [Fact]
         public void Should_not_allow_multiple_depots_in_the_same_biome()
         {
             var registry = new TestPersister();

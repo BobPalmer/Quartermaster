@@ -38,6 +38,11 @@ namespace WOLF
             return depot;
         }
 
+        public List<IDepot> GetDepots()
+        {
+            return _depots.ToList();
+        }
+
         public void OnLoad(ConfigNode node)
         {
             if (node.HasNode(SCENARIO_NODE_NAME))

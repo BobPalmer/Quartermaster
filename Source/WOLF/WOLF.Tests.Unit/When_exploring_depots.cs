@@ -16,7 +16,13 @@ namespace WOLF.Tests.Unit
         }
 
         [Fact]
-        public void Can_negotiate_a_provider_contract()
+        public void Can_show_resource_streams()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        [Fact]
+        public void Can_negotiate_a_provider_relationship()
         {
             var depot = new TestDepot();
             var expectedResource = "ElectricCharge";
@@ -38,7 +44,7 @@ namespace WOLF.Tests.Unit
         }
 
         [Fact]
-        public void Can_negotiate_a_consumer_contract()
+        public void Can_negotiate_a_consumer_relationship()
         {
             var depot = new TestDepot();
             var resourceName = "ElectricCharge";
@@ -64,7 +70,7 @@ namespace WOLF.Tests.Unit
         }
 
         [Fact]
-        public void Can_negotiate_a_contract_for_a_recipe()
+        public void Can_negotiate_a_relationship_for_a_recipe()
         {
             var depot = new TestDepot();
             var consumedResource1 = "ElectricCharge";
@@ -98,6 +104,12 @@ namespace WOLF.Tests.Unit
             Assert.Equal(expectedRemainingOre, oreStream.Available);
             Assert.Equal(providedQuantity1, lfStream.Incoming);
             Assert.Equal(providedQuantity1, lfStream.Available);
+        }
+
+        [Fact]
+        public void Can_negotiate_a_relationship_for_multiple_dependent_recipes()
+        {
+            throw new System.NotImplementedException();
         }
 
         [Theory]

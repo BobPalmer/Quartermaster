@@ -2,7 +2,7 @@
 
 namespace WOLF
 {
-    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.EDITOR, GameScenes.FLIGHT)]
+    [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.EDITOR, GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.TRACKSTATION)]
     public class WOLF_ScenarioModule : ScenarioModule
     {
         public ServiceManager ServiceManager { get; private set; }

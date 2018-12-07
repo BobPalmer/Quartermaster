@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace WOLF
 {
-    public class Depot : IDepot, IStreamNegotiator
+    public class Depot : IDepot
     {
         protected Dictionary<string, IResourceStream> _resourceStreams = new Dictionary<string, IResourceStream>();
         protected static readonly string _depotNodeName = "DEPOT";
@@ -17,9 +18,68 @@ namespace WOLF
             Biome = biome;
         }
 
+        private Dictionary<string, int> CheckForMissingResources(string resourceName, int quantity)
+        {
+            var missingResources = new Dictionary<string, int>();
+
+            return missingResources;
+        }
+
+        public List<IResourceStream> GetResources()
+        {
+            return _resourceStreams.Select(s => s.Value).ToList();
+        }
+
         public NegotiationResult Negotiate(IRecipe recipe)
         {
             return Negotiate(recipe.InputIngredients, recipe.OutputIngredients);
+        }
+
+        /// <summary>
+        /// Use this method to negotiate multiple recipes at the same time.
+        /// </summary>
+        /// <param name="recipes"></param>
+        /// <returns></returns>
+        public NegotiationResult Negotiate(List<IRecipe> recipes)
+        {
+            // Our goal is to reduce everything down to a single recipe
+            // Start by combining all the ins and outs
+            var inputIngredients = recipes
+                .SelectMany(r => r.InputIngredients)
+                .GroupBy(g => g.Key)
+                .ToDictionary(g => g.Key, g => g.Sum(i => i.Value));
+            var outputIngredients = recipes
+                .SelectMany(r => r.OutputIngredients)
+                .GroupBy(g => g.Key)
+                .ToDictionary(g => g.Key, g => g.Sum(i => i.Value));
+
+            // Reduce all ingredients down so that resources only appear once
+            //   as either an input or an output
+            var inputArray = inputIngredients.ToArray();
+            for (int i = 0; i < inputArray.Length; i++)
+            {
+                var input = inputArray[i];
+                var resourceName = input.Key;
+                var inputQuantity = input.Value;
+                if (outputIngredients.ContainsKey(resourceName))
+                {
+                    var outputQuantity = outputIngredients[input.Key];
+                    if (inputQuantity > outputQuantity)
+                    {
+                        inputIngredients[resourceName] -= outputQuantity;
+                        outputIngredients.Remove(resourceName);
+                    }
+                    else
+                    {
+                        outputIngredients[resourceName] -= inputQuantity;
+                        inputIngredients.Remove(resourceName);
+                    }
+                }
+            }
+
+            // Now just proceed as if we're negotiating a single recipe!
+            var recipe = new Recipe(inputIngredients, outputIngredients);
+            return Negotiate(recipe);
         }
 
         public NegotiationResult Negotiate(Dictionary<string, int> consumedResources, Dictionary<string, int> providedResources)
@@ -55,7 +115,7 @@ namespace WOLF
 
         public NegotiationResult NegotiateConsumer(Dictionary<string, int> consumedResources)
         {
-            Dictionary<string, int> missingResources = new Dictionary<string, int>();
+            var missingResources = new Dictionary<string, int>();
             foreach (var resource in consumedResources)
             {
                 // Make sure we actually have the requested resource
@@ -71,7 +131,7 @@ namespace WOLF
                 }
             }
 
-            if (missingResources.Count > 0)
+            if (missingResources.Count() > 0)
             {
                 return new FailedNegotiationResult(missingResources);
             }
