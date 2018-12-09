@@ -9,6 +9,7 @@
         public static readonly string MISSING_RESOURCE_MESSAGE = "Depot needs an additional ({0}) {1}.";
         public static readonly string SUCCESSFUL_DEPLOYMENT_MESSAGE = "Your infrastructure has expanded on {0}!";
         public static readonly string RECIPE_PARSE_FAILURE_MESSAGE = "[WOLF] Error parsing recipe ingredients. Check part config.";
+        public static readonly string UNKNOWN_RESOURCE_MESSAGE = "'{0}' is an unknown resource. WOLF can handle unknown resources but there may also be a typo in the part config.";
 
         public static readonly float SCREEN_MESSAGE_DURATION = 5f;
 

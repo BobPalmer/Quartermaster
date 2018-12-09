@@ -70,6 +70,8 @@
     <Compile Include="Modules\WOLF_DepotModule.cs" />
     <Compile Include="Modules\WOLF_HarvesterModule.cs" />
     <Compile Include="Modules\WOLF_HopperModule.cs" />
+    <Compile Include="Modules\WOLF_RecipeOption.cs" />
+    <Compile Include="Modules\WOLF_RecipeOptionController.cs" />
     <Compile Include="Modules\WOLF_ScenarioModule.cs" />
     <Compile Include="NegotiationResults.cs" />
     <Compile Include="Depot.cs" />

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace WOLF
@@ -8,7 +7,7 @@ namespace WOLF
     {
         protected IDepotRegistry _depotRegistry;
 
-        public IRecipe Recipe { get; protected set; }
+        public IRecipe Recipe { get; private set; }
 
         [KSPField]
         public string InputResources = string.Empty;
@@ -23,6 +22,11 @@ namespace WOLF
         }
 
         protected abstract void ConnectToDepot();
+
+        public void ChangeRecipe(string inputResources, string outputResources)
+        {
+            ParseRecipe(inputResources, outputResources);
+        }
 
         protected void DisplayMessage(string message)
         {
@@ -55,9 +59,15 @@ namespace WOLF
 
         protected void ParseRecipe()
         {
-            var inputIngredients = ParseRecipeIngredientList(InputResources);
-            var outputIngredients = ParseRecipeIngredientList(OutputResources);
+            ParseRecipe(InputResources, OutputResources);
+        }
 
+        protected void ParseRecipe(string inputResources, string outputResources)
+        {
+            var inputIngredients = ParseRecipeIngredientList(inputResources);
+            var outputIngredients = ParseRecipeIngredientList(outputResources);
+
+            // If inputs or outputs were null, that means there was an error parsing the ingredients
             if (inputIngredients == null || outputIngredients == null)
             {
                 return;
@@ -82,12 +92,6 @@ namespace WOLF
                     var resource = tokens[i];
                     var quantityString = tokens[i + 1];
 
-                    if (!PartResourceLibrary.Instance.resourceDefinitions.Contains(resource)
-                        && !WOLF_ScenarioModule.AuxillaryResources.Contains(resource))
-                    {
-                        Debug.LogError(Messenger.RECIPE_PARSE_FAILURE_MESSAGE);
-                        return null;
-                    }
                     if (!int.TryParse(quantityString, out int quantity))
                     {
                         Debug.LogError(Messenger.RECIPE_PARSE_FAILURE_MESSAGE);

@@ -57,8 +57,16 @@ namespace WOLF
             // Establish depot
             var depot = _depotRegistry.AddDepot(body, biome);
 
-            // Calculate resource abundance
+            // Calculate resource abundance and cache resource vein names in scenario module
             var harvestableResources = CalculateAbundance(ParseHarvestableResources());
+            var knownResources = WOLF_ScenarioModule.AuxillaryResources;
+            foreach (var resource in harvestableResources)
+            {
+                if (!knownResources.Contains(resource.Key))
+                {
+                    knownResources.Add(resource.Key);
+                }
+            }
 
             // Setup starting resource streams
             depot.NegotiateProvider(Recipe.OutputIngredients);
