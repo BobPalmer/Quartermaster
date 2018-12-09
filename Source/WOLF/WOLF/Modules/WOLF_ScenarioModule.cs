@@ -1,4 +1,5 @@
-﻿using USITools;
+﻿using System.Collections.Generic;
+using USITools;
 
 namespace WOLF
 {
@@ -6,6 +7,12 @@ namespace WOLF
     public class WOLF_ScenarioModule : ScenarioModule
     {
         public ServiceManager ServiceManager { get; private set; }
+        public static List<string> AuxillaryResources { get; private set; } = new List<string>
+        {
+            "LifeSupport",
+            "Habitation",
+            "Cafeteria"
+        };
 
         public override void OnAwake()
         {

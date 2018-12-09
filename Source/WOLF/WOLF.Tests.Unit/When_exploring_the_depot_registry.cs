@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using WOLF.Tests.Unit.Mocks;
 using Xunit;
 
@@ -37,7 +38,21 @@ namespace WOLF.Tests.Unit
         [Fact]
         public void Can_find_all_depots()
         {
-            throw new System.NotImplementedException();
+            var registry = new TestPersister();
+            var expectedBody = "Mun";
+            var expectedBiome1 = "East Crater";
+            var expectedBiome2 = "Farside Crater";
+            var expectedDepots = new List<IDepot>();
+            var expectedDepot1 = registry.AddDepot(expectedBody, expectedBiome1);
+            var expectedDepot2 = registry.AddDepot(expectedBody, expectedBiome2);
+
+            var depots = registry.GetDepots();
+
+            // Should return a copy of its depot list, not its internal list
+            // Note: XUnit's Equal assertion is List-aware, so we need to use the NotSame
+            //       assertion to do a referential comparison.
+            Assert.NotSame(registry.Depots, depots);
+            Assert.Equal(registry.Depots, depots);
         }
 
         [Fact]

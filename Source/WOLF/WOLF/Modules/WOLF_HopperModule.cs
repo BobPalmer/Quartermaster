@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using USITools;
 
-using WAPM = WOLF.WOLF_AbstractPartModule;
-using WCM = WOLF.WOLF_ConverterModule;
-
-namespace WOLF.Modules
+namespace WOLF
 {
     public class WOLF_HopperModule : USI_Converter
     {
@@ -31,9 +29,10 @@ namespace WOLF.Modules
         [KSPEvent(guiName = "Connect to depot", active = true, guiActive = true, guiActiveEditor = false)]
         public void ConnectToDepotEvent()
         {
+            // Check for issues that would prevent deployment
             if (IsConnectedToDepot)
             {
-                WAPM.DisplayMessage(ALREADY_CONNECTED_MESSAGE);
+                Messenger.DisplayMessage(ALREADY_CONNECTED_MESSAGE);
                 return;
             }
 
@@ -42,12 +41,24 @@ namespace WOLF.Modules
 
             if (biome == string.Empty)
             {
-                WAPM.DisplayMessage(WCM.INVALID_SITUATION_MESSAGE);
+                Messenger.DisplayMessage(Messenger.INVALID_SITUATION_MESSAGE);
                 return;
             }
             if (!_depotRegistry.HasDepot(body, biome))
             {
-                WAPM.DisplayMessage(WCM.MISSING_DEPOT_MESSAGE);
+                Messenger.DisplayMessage(Messenger.MISSING_DEPOT_MESSAGE);
+                return;
+            }
+            var otherDepotModules = vessel.FindPartModulesImplementing<WOLF_DepotModule>();
+            if (otherDepotModules.Any())
+            {
+                Messenger.DisplayMessage(Messenger.INVALID_DEPOT_PART_ATTACHMENT_MESSAGE);
+                return;
+            }
+            var otherWolfPartModules = vessel.FindPartModulesImplementing<WOLF_AbstractPartModule>();
+            if (otherWolfPartModules.Any())
+            {
+                Messenger.DisplayMessage(Messenger.INVALID_HOPPER_PART_ATTACHMENT_MESSAGE);
                 return;
             }
 
@@ -60,7 +71,7 @@ namespace WOLF.Modules
                 var failureResult = result as FailedNegotiationResult;
                 foreach (var missingResource in failureResult.MissingResources)
                 {
-                    WAPM.DisplayMessage(string.Format(WCM.MISSING_RESOURCE_MESSAGE, missingResource.Value, missingResource.Key));
+                    Messenger.DisplayMessage(string.Format(Messenger.MISSING_RESOURCE_MESSAGE, missingResource.Value, missingResource.Key));
                 }
                 return;
             }
@@ -69,7 +80,7 @@ namespace WOLF.Modules
             DepotBiome = biome;
             IsConnectedToDepot = true;
 
-            WAPM.DisplayMessage(string.Format(WCM.SUCCESSFUL_DEPLOYMENT_MESSAGE, body));
+            Messenger.DisplayMessage(string.Format(Messenger.SUCCESSFUL_DEPLOYMENT_MESSAGE, body));
         }
 
         protected string GetVesselBiome()
@@ -89,7 +100,7 @@ namespace WOLF.Modules
         public override void StartResourceConverter()
         {
             if (!IsConnectedToDepot)
-                WAPM.DisplayMessage(NOT_CONNECTED_MESSAGE);
+                Messenger.DisplayMessage(NOT_CONNECTED_MESSAGE);
             else
                 base.StartResourceConverter();
         }
@@ -105,7 +116,7 @@ namespace WOLF.Modules
         {
             base.OnStart(state);
 
-            var scenario = HighLogic.FindObjectOfType<WOLF_ScenarioModule>();
+            var scenario = FindObjectOfType<WOLF_ScenarioModule>();
             _depotRegistry = scenario.ServiceManager.GetService<IDepotRegistry>();
 
             ParseWolfRecipe();
@@ -119,13 +130,13 @@ namespace WOLF.Modules
 
                 if (depot == null)
                 {
-                    WAPM.DisplayMessage(LOST_CONNECTION_MESSAGE);
+                    Messenger.DisplayMessage(LOST_CONNECTION_MESSAGE);
                     IsConnectedToDepot = false;
                     StopResourceConverter();
                 }
                 else if (depot.Body != body || depot.Biome != biome)
                 {
-                    WAPM.DisplayMessage(LOST_CONNECTION_MESSAGE);
+                    Messenger.DisplayMessage(LOST_CONNECTION_MESSAGE);
                     IsConnectedToDepot = false;
                     StopResourceConverter();
 
@@ -146,7 +157,7 @@ namespace WOLF.Modules
 
         protected void ParseWolfRecipe()
         {
-            var inputIngredients = WAPM.ParseRecipeIngredientList(InputResources);
+            var inputIngredients = WOLF_AbstractPartModule.ParseRecipeIngredientList(InputResources);
             if (inputIngredients == null)
             {
                 return;

@@ -18,7 +18,30 @@ namespace WOLF.Tests.Unit
         [Fact]
         public void Can_show_resource_streams()
         {
-            throw new System.NotImplementedException();
+            var depot = new TestDepot();
+            var resourceName = "ElectricCharge";
+            var providedQuantity = 10;
+            var requestedQuantity = 3;
+            var expectedRemainingQuantity = 7;
+            var providedResources = new Dictionary<string, int>
+            {
+                { resourceName, providedQuantity }
+            };
+            var consumedResources = new Dictionary<string, int>
+            {
+                { resourceName, requestedQuantity }
+            };
+            depot.NegotiateProvider(providedResources);
+            depot.NegotiateConsumer(consumedResources);
+
+            var streams = depot.GetResources();
+
+            Assert.NotNull(streams);
+            Assert.NotEmpty(streams);
+            Assert.Contains(streams, s => s.ResourceName == resourceName
+                && s.Incoming == providedQuantity
+                && s.Outgoing == requestedQuantity
+                && s.Available == expectedRemainingQuantity);
         }
 
         [Fact]
@@ -109,7 +132,53 @@ namespace WOLF.Tests.Unit
         [Fact]
         public void Can_negotiate_a_relationship_for_multiple_dependent_recipes()
         {
-            throw new System.NotImplementedException();
+            var depot = new TestDepot();
+            var consumedResource1 = "ElectricCharge";
+            var providedQuantity1 = 20;
+            var consumedQuantity1a = 8;
+            var consumedQuantity1b = 10;
+            var expectedRemaining1 = 2;
+            var consumedResource2 = "Ore";
+            var providedQuantity2 = 15;
+            var consumedQuantity2 = 10;
+            var expectedRemaining2 = 5;
+            var providedResource3 = "LiquidFuel";
+            var providedQuantity3 = 5;
+            // Setup a 'refinery' recipe
+            var recipe1 = new Recipe();
+            recipe1.InputIngredients.Add(consumedResource1, consumedQuantity1b);
+            recipe1.InputIngredients.Add(consumedResource2, consumedQuantity2);
+            recipe1.OutputIngredients.Add(providedResource3, providedQuantity3);
+            // Setup a 'drill' recipe
+            var recipe2 = new Recipe();
+            recipe2.InputIngredients.Add(consumedResource1, consumedQuantity1a);
+            recipe2.OutputIngredients.Add(consumedResource2, providedQuantity2);
+            // Setup a 'solar panel' recipe
+            var recipe3 = new Recipe();
+            recipe3.OutputIngredients.Add(consumedResource1, providedQuantity1);
+            // Note: The recipes are arranged in this order to make sure we aren't
+            //       accidentally passing the test.
+            var recipes = new List<IRecipe>
+            {
+                recipe1,
+                recipe2,
+                recipe3
+            };
+
+            var result = depot.Negotiate(recipes);
+
+            Assert.IsType<OkNegotiationResult>(result);
+            Assert.Equal(3, depot.Resources.Count);
+            var streams = depot.Resources;
+            Assert.True(streams.ContainsKey(consumedResource1));
+            Assert.True(streams.ContainsKey(consumedResource2));
+            Assert.True(streams.ContainsKey(providedResource3));
+            var resource1 = streams[consumedResource1];
+            Assert.Equal(expectedRemaining1, resource1.Available);
+            var resource2 = streams[consumedResource2];
+            Assert.Equal(expectedRemaining2, resource2.Available);
+            var resource3 = streams[providedResource3];
+            Assert.Equal(providedQuantity3, resource3.Available);
         }
 
         [Theory]

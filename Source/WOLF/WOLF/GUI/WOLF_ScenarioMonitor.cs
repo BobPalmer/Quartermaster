@@ -81,7 +81,7 @@ namespace WOLF
             }
 
             // Setup tab labels
-            _tabLabels = new[] { "WOLF Depots" };
+            _tabLabels = new[] { "Depots", "Harvestable Resources" };
 
             // Cache planet display names
             _planetDisplayNames = FlightGlobals.Bodies
@@ -140,7 +140,7 @@ namespace WOLF
 
             // Show UI navigation tabs
             GUILayout.BeginHorizontal();
-            activeTab = GUILayout.SelectionGrid(activeTab, _tabLabels, 6, _smButtonStyle);
+            activeTab = GUILayout.SelectionGrid(activeTab, _tabLabels, 2, _smButtonStyle);
             GUILayout.EndHorizontal();
 
             // Show the UI for the currently selected tab
@@ -148,6 +148,9 @@ namespace WOLF
             {
                 case 0:
                     ShowDepots();
+                    break;
+                case 1:
+                    ShowHarvestableResources();
                     break;
             }
 
@@ -157,10 +160,20 @@ namespace WOLF
             GUI.DragWindow();
         }
 
-        /// <summary>
-        /// Displays the UI for WOLF Depots
-        /// </summary>
         private void ShowDepots()
+        {
+            ShowResources(r => !r.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX));
+        }
+
+        private void ShowHarvestableResources()
+        {
+            ShowResources(r => r.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX), "Abundance", "Harvested");
+        }
+
+        /// <summary>
+        /// Displays the UI for WOLF
+        /// </summary>
+        private void ShowResources(Func<IResourceStream, bool> filter, string incomingHeaderLabel = "Incoming", string outgoingHeaderLabel = "Outgoing", string availableHeaderLabel = "Available")
         {
             _scrollPos = GUILayout.BeginScrollView(_scrollPos, _scrollStyle, GUILayout.Width(600), GUILayout.Height(380));
             GUILayout.BeginVertical();
@@ -169,11 +182,11 @@ namespace WOLF
             {
                 // Display column headers
                 GUILayout.BeginHorizontal();
-                GUILayout.Label(" Body/Biome", _labelStyle, GUILayout.Width(160));
+                GUILayout.Label("Body/Biome", _labelStyle, GUILayout.Width(160));
                 GUILayout.Label("Resource", _labelStyle, GUILayout.Width(165));
-                GUILayout.Label("Incoming", _labelStyle, GUILayout.Width(80));
-                GUILayout.Label("Outgoing", _labelStyle, GUILayout.Width(80));
-                GUILayout.Label("Available", _labelStyle, GUILayout.Width(80));
+                GUILayout.Label(incomingHeaderLabel, _labelStyle, GUILayout.Width(80));
+                GUILayout.Label(outgoingHeaderLabel, _labelStyle, GUILayout.Width(80));
+                GUILayout.Label(availableHeaderLabel, _labelStyle, GUILayout.Width(80));
                 GUILayout.EndHorizontal();
 
                 var depotsByPlanet = _depotRegistry.GetDepots()
@@ -191,11 +204,19 @@ namespace WOLF
                         GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", planetDisplayName, depot.Biome), _labelStyle, GUILayout.Width(160));
                         GUILayout.EndHorizontal();
 
-                        foreach (var resource in depot.GetResources())
+                        var resources = depot.GetResources()
+                            .Where(filter)
+                            .OrderBy(r => r.ResourceName);
+
+                        foreach (var resource in resources)
                         {
+                            var resourceName = resource.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX)
+                                ? resource.ResourceName.Remove(resource.ResourceName.Length - WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX.Length)
+                                : resource.ResourceName;
+
                             GUILayout.BeginHorizontal();
                             GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(160));
-                            GUILayout.Label(resource.ResourceName, _labelStyle, GUILayout.Width(165));
+                            GUILayout.Label(resourceName, _labelStyle, GUILayout.Width(165));
                             GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Incoming), _labelStyle, GUILayout.Width(80));
                             GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Outgoing), _labelStyle, GUILayout.Width(80));
                             GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Available), _labelStyle, GUILayout.Width(80));

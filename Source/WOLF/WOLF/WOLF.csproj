@@ -64,8 +64,11 @@
     <Compile Include="GUI\WOLF_ScenarioMonitor.cs" />
     <Compile Include="Helpers\WOLF_Exceptions.cs" />
     <Compile Include="Interfaces\IDepotRegistry.cs" />
+    <Compile Include="Messenger.cs" />
     <Compile Include="Modules\WOLF_AbstractPartModule.cs" />
+    <Compile Include="Modules\WOLF_CrewModule.cs" />
     <Compile Include="Modules\WOLF_DepotModule.cs" />
+    <Compile Include="Modules\WOLF_HarvesterModule.cs" />
     <Compile Include="Modules\WOLF_HopperModule.cs" />
     <Compile Include="Modules\WOLF_ScenarioModule.cs" />
     <Compile Include="NegotiationResults.cs" />

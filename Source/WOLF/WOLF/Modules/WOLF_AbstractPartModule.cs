@@ -1,22 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace WOLF
 {
     public abstract class WOLF_AbstractPartModule : PartModule
     {
-        public static readonly string RECIPE_PARSE_FAILURE_MESSAGE = "[WOLF] Error parsing DepotModule recipe ingredients. Check part config.";
-        public static readonly float SCREEN_MESSAGE_DURATION = 5f;
-
         protected IDepotRegistry _depotRegistry;
 
         public IRecipe Recipe { get; protected set; }
 
         [KSPField]
-        public string InputResources = "";
+        public string InputResources = string.Empty;
 
         [KSPField]
-        public string OutputResources = "";
+        public string OutputResources = string.Empty;
 
         [KSPEvent(guiName = "Connect to WOLF", active = true, guiActive = true, guiActiveEditor = false)]
         public void ConnectToDepotEvent()
@@ -25,6 +23,11 @@ namespace WOLF
         }
 
         protected abstract void ConnectToDepot();
+
+        protected void DisplayMessage(string message)
+        {
+            Messenger.DisplayMessage(message);
+        }
 
         protected string GetVesselBiome()
         {
@@ -40,16 +43,11 @@ namespace WOLF
             }
         }
 
-        public static void DisplayMessage(string message)
-        {
-            ScreenMessages.PostScreenMessage(message, SCREEN_MESSAGE_DURATION, ScreenMessageStyle.UPPER_CENTER);
-        }
-
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
 
-            var scenario = HighLogic.FindObjectOfType<WOLF_ScenarioModule>();
+            var scenario = FindObjectOfType<WOLF_ScenarioModule>();
             _depotRegistry = scenario.ServiceManager.GetService<IDepotRegistry>();
 
             ParseRecipe();
@@ -76,7 +74,7 @@ namespace WOLF
                 var tokens = ingredients.Split(',');
                 if (tokens.Length % 2 != 0)
                 {
-                    Debug.LogError(RECIPE_PARSE_FAILURE_MESSAGE);
+                    Debug.LogError(Messenger.RECIPE_PARSE_FAILURE_MESSAGE);
                     return null;
                 }
                 for (int i = 0; i < tokens.Length - 1; i = i + 2)
@@ -84,14 +82,15 @@ namespace WOLF
                     var resource = tokens[i];
                     var quantityString = tokens[i + 1];
 
-                    if (!PartResourceLibrary.Instance.resourceDefinitions.Contains(resource))
+                    if (!PartResourceLibrary.Instance.resourceDefinitions.Contains(resource)
+                        && !WOLF_ScenarioModule.AuxillaryResources.Contains(resource))
                     {
-                        Debug.LogError(RECIPE_PARSE_FAILURE_MESSAGE);
+                        Debug.LogError(Messenger.RECIPE_PARSE_FAILURE_MESSAGE);
                         return null;
                     }
                     if (!int.TryParse(quantityString, out int quantity))
                     {
-                        Debug.LogError(RECIPE_PARSE_FAILURE_MESSAGE);
+                        Debug.LogError(Messenger.RECIPE_PARSE_FAILURE_MESSAGE);
                         return null;
                     }
 
