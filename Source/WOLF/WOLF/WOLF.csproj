@@ -1,31 +1,29 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{887AB5FE-817D-4B4A-99CD-6B9E8144329E}</ProjectGuid>
+    <ProjectGuid>{47CCB592-108F-4804-9FF5-45EBE7907976}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WOLF</RootNamespace>
     <AssemblyName>WOLF</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\..\KSP_KSPTV\GameData\UmbraSpaceIndustries\MKS\</OutputPath>
+    <OutputPath>..\..\..\FOR_RELEASE\GameData\UmbraSpaceIndustries\WOLF\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,30 +31,25 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\KSP_DEV\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="KolonyTools">
-      <HintPath>..\..\..\..\..\KSP_DEV\GameData\UmbraSpaceIndustries\MKS\KolonyTools.dll</HintPath>
+      <HintPath>..\..\..\..\..\KSP_DEV\KSP_x64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\KSP_DEV\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\..\..\..\KSP_DEV\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\..\KSP_DEV\KSP_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\..\..\..\KSP_DEV\KSP_x64_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="USITools">
@@ -65,46 +58,37 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GUI\TabResourcePool.cs" />
-    <Compile Include="PartModules\WOLF_ModuleResourcePool.cs" />
-    <Compile Include="Persistence\Endpoint.cs" />
-    <Compile Include="Persistence\FakePersister.cs" />
-    <Compile Include="Persistence\INetworkPersister.cs" />
-    <Compile Include="IResourceNetworkProvider.cs" />
-    <Compile Include="Persistence\NetworkRepository.cs" />
-    <Compile Include="Persistence\Route.cs" />
-    <Compile Include="ResourceNetwork.cs" />
-    <Compile Include="DynamicIngredients.cs" />
-    <Compile Include="IGameData.cs" />
-    <Compile Include="Ingredient.cs" />
-    <Compile Include="Job.cs" />
-    <Compile Include="KSPGameData.cs" />
-    <Compile Include="Persistence\NetworkPersistence.cs" />
-    <Compile Include="ResourceTransporter.cs" />
-    <Compile Include="ProcessWorker.cs" />
+    <Compile Include="DepotResourceViewModel.cs" />
+    <Compile Include="GUI\Helpers\Utilities.cs" />
+    <Compile Include="GUI\Helpers\Window.cs" />
+    <Compile Include="GUI\WOLF_ScenarioMonitor.cs" />
+    <Compile Include="Helpers\WOLF_Exceptions.cs" />
+    <Compile Include="Interfaces\IDepotRegistry.cs" />
+    <Compile Include="Messenger.cs" />
+    <Compile Include="Modules\WOLF_AbstractPartModule.cs" />
+    <Compile Include="Modules\WOLF_CrewModule.cs" />
+    <Compile Include="Modules\WOLF_DepotModule.cs" />
+    <Compile Include="Modules\WOLF_HarvesterModule.cs" />
+    <Compile Include="Modules\WOLF_HopperModule.cs" />
+    <Compile Include="Modules\WOLF_RecipeOption.cs" />
+    <Compile Include="Modules\WOLF_RecipeOptionController.cs" />
+    <Compile Include="Modules\WOLF_ScenarioModule.cs" />
+    <Compile Include="NegotiationResults.cs" />
+    <Compile Include="Depot.cs" />
+    <Compile Include="Interfaces\IDepot.cs" />
+    <Compile Include="Interfaces\IResourceStream.cs" />
+    <Compile Include="Poof.cs" />
+    <Compile Include="ResourceStream.cs" />
+    <Compile Include="ScenarioPersister.cs" />
+    <Compile Include="Interfaces\IPersistenceAware.cs" />
+    <Compile Include="Interfaces\IRecipe.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Recipe.cs" />
-    <Compile Include="Persistence\ResourceLink.cs" />
-    <Compile Include="ResourceNetworkScenario.cs" />
-    <Compile Include="ResourcePool.cs" />
-    <Compile Include="GUI\WOLFMonitor.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Terms.txt" />
+    <Compile Include="Modules\WOLF_ConverterModule.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>"D:\Games\pdb2mdb\pdb2mdb.exe" "$(TargetFileName)"</PostBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
