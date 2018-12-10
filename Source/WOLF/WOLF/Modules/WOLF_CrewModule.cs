@@ -7,9 +7,11 @@ namespace WOLF
         private static readonly int REQUIRED_LIFE_SUPPORT = 1;
         private static readonly int REQUIRED_HABITATION = 1;
         private static readonly int REQUIRED_CAFETERIA = 1;
+        private static readonly int MULCH_OUTPUT = 1;
         private static readonly string RESOURCE_NAME_LIFESUPPORT = "LifeSupport";
         private static readonly string RESOURCE_NAME_HABITATION = "Habitation";
         private static readonly string RESOURCE_NAME_CAFETERIA = "Cafeteria";
+        private static readonly string RESOURCE_NAME_MULCH = "Mulch";
 
         public static readonly string CREW_RESOURCE_SUFFIX = "CrewPoint";
 
@@ -41,6 +43,14 @@ namespace WOLF
                 else
                 {
                     outputs[resourceName] += stars;
+                }
+                if (!outputs.ContainsKey(RESOURCE_NAME_MULCH))
+                {
+                    outputs.Add(RESOURCE_NAME_MULCH, MULCH_OUTPUT);
+                }
+                else
+                {
+                    outputs[RESOURCE_NAME_MULCH] += MULCH_OUTPUT;
                 }
             }
 

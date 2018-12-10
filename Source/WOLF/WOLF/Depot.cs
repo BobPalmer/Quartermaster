@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace WOLF
 {
@@ -56,6 +57,7 @@ namespace WOLF
             // Reduce all ingredients down so that resources only appear once
             //   as either an input or an output
             var inputArray = inputIngredients.ToArray();
+            var offsets = new Dictionary<string, int>();
             for (int i = 0; i < inputArray.Length; i++)
             {
                 var input = inputArray[i];
@@ -68,18 +70,36 @@ namespace WOLF
                     {
                         inputIngredients[resourceName] -= outputQuantity;
                         outputIngredients.Remove(resourceName);
+                        offsets.Add(resourceName, outputQuantity);
                     }
                     else
                     {
                         outputIngredients[resourceName] -= inputQuantity;
                         inputIngredients.Remove(resourceName);
+                        offsets.Add(resourceName, inputQuantity);
                     }
                 }
             }
 
             // Now just proceed as if we're negotiating a single recipe!
             var recipe = new Recipe(inputIngredients, outputIngredients);
-            return Negotiate(recipe);
+            var result = Negotiate(recipe);
+            if (result is FailedNegotiationResult)
+            {
+                return result;
+            }
+            else
+            {
+                // Add our offsets to the depot just so we can have a full accounting of all the ins and outs
+                var inputResult = NegotiateProvider(offsets);
+                var outputResult = NegotiateConsumer(offsets);
+                if (inputResult is FailedNegotiationResult || outputResult is FailedNegotiationResult)
+                {
+                    Debug.LogError(string.Format("[WOLF] {0}: Failed to log offsets with the depot.", GetType().Name));
+                }
+
+                return result;
+            }
         }
 
         public NegotiationResult Negotiate(Dictionary<string, int> consumedResources, Dictionary<string, int> providedResources)
