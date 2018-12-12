@@ -15,11 +15,23 @@ namespace WOLF
         [KSPField]
         public string HarvestableResources = string.Empty;
 
+        protected Dictionary<string,int> CalculateAbundance(List<string> resources, HarvestTypes harvestType)
+        {
+            var abReq = new AbundanceRequest
+            {
+                Altitude = vessel.altitude,
+                BodyId = FlightGlobals.currentMainBody.flightGlobalsIndex,
+                CheckForLock = false,
+                Latitude = vessel.latitude,
+                Longitude = vessel.longitude,
+                ResourceType = HarvestTypes.Planetary
+            };
+            return ResourceManager.GetResourceAbundance(resources, abReq);
+        }
+
         protected Dictionary<string, int> CalculateAbundance(List<string> resources)
         {
-            return resources
-                .Select(r => new { Resource = r + HARVESTABLE_RESOURCE_SUFFIX, Quantity = 10 })
-                .ToDictionary(r => r.Resource, r => r.Quantity);
+            return CalculateAbundance(resources, HarvestTypes.Planetary);
         }
 
         protected override void ConnectToDepot()
