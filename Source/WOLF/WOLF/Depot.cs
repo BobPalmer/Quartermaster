@@ -19,6 +19,13 @@ namespace WOLF
             Biome = biome;
         }
 
+        /// <summary>
+        /// Don't use this constructor. It's used only for the persistence layer.
+        /// </summary>
+        public Depot()
+        {
+        }
+
         private Dictionary<string, int> CheckForMissingResources(string resourceName, int quantity)
         {
             var missingResources = new Dictionary<string, int>();
@@ -114,6 +121,33 @@ namespace WOLF
 
         public NegotiationResult NegotiateProvider(Dictionary<string, int> providedResources)
         {
+            // If any of the quantities are negative, make sure that they won't break consumer dependencies
+            var negativeResources = providedResources
+                .Where(r => r.Value < 0);
+            if (negativeResources.Any())
+            {
+                var brokenDependencies = new List<string>();
+                foreach (var resource in negativeResources)
+                {
+                    var resourceName = resource.Key;
+                    if (!_resourceStreams.ContainsKey(resourceName))
+                    {
+                        brokenDependencies.Add(resourceName);
+                        continue;
+                    }
+
+                    var removedQuantity = resource.Value;  // this will be a negative value
+                    var stream = _resourceStreams[resourceName];
+                    if (stream.Available + removedQuantity < 0)
+                    {
+                        brokenDependencies.Add(resourceName);
+                    }
+
+                    if (brokenDependencies.Any())
+                        return new BrokenNegotiationResult(brokenDependencies);
+                }
+            }
+
             foreach (var resource in providedResources)
             {
                 IResourceStream stream;
@@ -138,16 +172,17 @@ namespace WOLF
             var missingResources = new Dictionary<string, int>();
             foreach (var resource in consumedResources)
             {
+                var resourceName = resource.Key;
                 // Make sure we actually have the requested resource
-                if (!_resourceStreams.ContainsKey(resource.Key))
+                if (!_resourceStreams.ContainsKey(resourceName))
                 {
-                    missingResources.Add(resource.Key, resource.Value);
+                    missingResources.Add(resourceName, resource.Value);
                 }
                 // Make sure we have enough of the requested resource
-                else if (_resourceStreams[resource.Key].Available < resource.Value)
+                else if (_resourceStreams[resourceName].Available < resource.Value)
                 {
-                    var stream = _resourceStreams[resource.Key];
-                    missingResources.Add(resource.Key, resource.Value - stream.Available);
+                    var stream = _resourceStreams[resourceName];
+                    missingResources.Add(resourceName, resource.Value - stream.Available);
                 }
             }
 
@@ -168,6 +203,9 @@ namespace WOLF
 
         public void OnLoad(ConfigNode node)
         {
+            Body = node.GetValue("Body");
+            Biome = node.GetValue("Biome");
+
             var streamNodes = node.GetNodes();
             foreach (var streamNode in streamNodes)
             {

@@ -4,32 +4,44 @@ namespace WOLF
 {
     public class WOLF_ConverterModule : WOLF_AbstractPartModule
     {
-        protected override void ConnectToDepot()
+        /// <summary>
+        /// Checks for issues that would prevent connecting to a depot.
+        /// </summary>
+        /// <returns>A message if there was an error, otherwise empty string.</returns>
+        protected string CanConnectToDepot()
         {
-            // Check for issues that would prevent deployment
             var body = vessel.mainBody.name;
             var biome = GetVesselBiome();
 
             if (biome == string.Empty)
             {
-                DisplayMessage(Messenger.INVALID_SITUATION_MESSAGE);
-                return;
+                return Messenger.INVALID_SITUATION_MESSAGE;
             }
             if (!_depotRegistry.HasDepot(body, biome))
             {
-                DisplayMessage(Messenger.MISSING_DEPOT_MESSAGE);
-                return;
+                return Messenger.MISSING_DEPOT_MESSAGE;
             }
             var otherDepotModules = vessel.FindPartModulesImplementing<WOLF_DepotModule>();
             if (otherDepotModules.Any())
             {
-                DisplayMessage(Messenger.INVALID_DEPOT_PART_ATTACHMENT_MESSAGE);
-                return;
+                return Messenger.INVALID_DEPOT_PART_ATTACHMENT_MESSAGE;
             }
             var otherHopperModules = vessel.FindPartModulesImplementing<WOLF_HopperModule>();
             if (otherHopperModules.Any())
             {
-                DisplayMessage(Messenger.INVALID_HOPPER_PART_ATTACHMENT_MESSAGE);
+                return Messenger.INVALID_HOPPER_PART_ATTACHMENT_MESSAGE;
+            }
+
+            return string.Empty;
+        }
+
+        protected override void ConnectToDepot()
+        {
+            // Check for issues that would prevent deployment
+            var deployCheckResult = CanConnectToDepot();
+            if (!string.IsNullOrEmpty(deployCheckResult))
+            {
+                DisplayMessage(deployCheckResult);
                 return;
             }
 
@@ -55,6 +67,8 @@ namespace WOLF
             }
 
             // Negotiate recipes with the depot
+            var body = vessel.mainBody.name;
+            var biome = GetVesselBiome();
             var depot = _depotRegistry.GetDepot(body, biome);
             var result = depot.Negotiate(recipes);
 

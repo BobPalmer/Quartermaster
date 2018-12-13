@@ -3,12 +3,14 @@ using System.Linq;
 
 namespace WOLF
 {
-    public class ScenarioPersister : IDepotRegistry
+    public class ScenarioPersister : IDepotRegistry, IRouteRegistry
     {
-        public static readonly string SCENARIO_NODE_NAME = "WOLF_DATA";
+        public static readonly string DEPOTS_NODE_NAME = "DEPOTS";
+        public static readonly string ROUTES_NODE_NAME = "ROUTES";
         protected List<IDepot> _depots { get; private set; } = new List<IDepot>();
+        protected List<IRoute> _routes { get; private set; } = new List<IRoute>();
 
-        public IDepot AddDepot(string body, string biome)
+        public IDepot CreateDepot(string body, string biome)
         {
             if (HasDepot(body, biome))
             {
@@ -21,9 +23,31 @@ namespace WOLF
             return depot;
         }
 
-        public bool HasDepot(string body, string biome)
+        public IRoute CreateRoute(string originBody, string originBiome, string destinationBody, string destinationBiome, int payload)
         {
-            return _depots.Any(d => d.Body == body && d.Biome == biome);
+            // If neither depot exists, this will short-circuit because GetDepot will throw an exception
+            var origin = GetDepot(originBody, originBiome);
+            var destination = GetDepot(destinationBody, destinationBiome);
+
+            // If a route already exists, increase its bandwidth
+            var existingRoute = GetRoute(originBody, originBiome, destinationBody, destinationBiome);
+            if (existingRoute != null)
+            {
+                existingRoute.IncreasePayload(payload);
+                return existingRoute;
+            }
+
+            var route = new Route(
+                originBody,
+                originBiome,
+                destinationBody,
+                destinationBiome,
+                payload,
+                this);
+
+            _routes.Add(route);
+
+            return route;
         }
 
         public IDepot GetDepot(string body, string biome)
@@ -43,11 +67,35 @@ namespace WOLF
             return _depots.ToList();
         }
 
+        public IRoute GetRoute(string originBody, string originBiome, string destinationBody, string destinationBiome)
+        {
+            return _routes
+                .Where(r => r.OriginBody == originBody
+                    && r.OriginBiome == originBiome
+                    && r.DestinationBody == destinationBody
+                    && r.DestinationBiome == destinationBiome)
+                .FirstOrDefault();
+        }
+
+        public bool HasDepot(string body, string biome)
+        {
+            return _depots.Any(d => d.Body == body && d.Biome == biome);
+        }
+
+        public bool HasRoute(string originBody, string originBiome, string destinationBody, string destinationBiome)
+        {
+            return _routes
+                .Any(r => r.OriginBody == originBody
+                    && r.OriginBiome == originBiome
+                    && r.DestinationBody == destinationBody
+                    && r.DestinationBiome == destinationBiome);
+        }
+
         public void OnLoad(ConfigNode node)
         {
-            if (node.HasNode(SCENARIO_NODE_NAME))
+            if (node.HasNode(DEPOTS_NODE_NAME))
             {
-                var wolfNode = node.GetNode(SCENARIO_NODE_NAME);
+                var wolfNode = node.GetNode(DEPOTS_NODE_NAME);
                 var depotNodes = wolfNode.GetNodes();
                 foreach (var depotNode in depotNodes)
                 {
@@ -59,23 +107,50 @@ namespace WOLF
                     _depots.Add(depot);
                 }
             }
+            if (node.HasNode(ROUTES_NODE_NAME))
+            {
+                var wolfNode = node.GetNode(ROUTES_NODE_NAME);
+                var routeNodes = wolfNode.GetNodes();
+                foreach (var routeNode in routeNodes)
+                {
+                    var route = new Route(this);
+                    route.OnLoad(routeNode);
+
+                    _routes.Add(route);
+                }
+            }
         }
 
         public void OnSave(ConfigNode node)
         {
-            ConfigNode wolfNode;
-            if (!node.HasNode("WOLF_DATA"))
+            ConfigNode depotsNode;
+            if (!node.HasNode(DEPOTS_NODE_NAME))
             {
-                wolfNode = node.AddNode(SCENARIO_NODE_NAME);
+                depotsNode = node.AddNode(DEPOTS_NODE_NAME);
             }
             else
             {
-                wolfNode = node.GetNode(SCENARIO_NODE_NAME);
+                depotsNode = node.GetNode(DEPOTS_NODE_NAME);
+            }
+
+            ConfigNode routesNode;
+            if (!node.HasNode(ROUTES_NODE_NAME))
+            {
+                routesNode = node.AddNode(ROUTES_NODE_NAME);
+            }
+            else
+            {
+                routesNode = node.GetNode(ROUTES_NODE_NAME);
             }
 
             foreach (var depot in _depots)
             {
-                depot.OnSave(wolfNode);
+                depot.OnSave(depotsNode);
+            }
+
+            foreach (var route in _routes)
+            {
+                route.OnSave(routesNode);
             }
         }
     }

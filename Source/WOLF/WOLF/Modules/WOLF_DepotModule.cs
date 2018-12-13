@@ -67,7 +67,7 @@ namespace WOLF
             }
 
             // Establish depot
-            var depot = _depotRegistry.AddDepot(body, biome);
+            var depot = _depotRegistry.CreateDepot(body, biome);
 
             // Calculate resource abundance and cache resource vein names in scenario module
             var harvestableResources = CalculateAbundance(ParseHarvestableResources());
