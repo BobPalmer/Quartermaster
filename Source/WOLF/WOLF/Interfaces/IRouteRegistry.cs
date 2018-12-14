@@ -1,4 +1,6 @@
-﻿namespace WOLF
+﻿using System.Collections.Generic;
+
+namespace WOLF
 {
     public interface IRouteRegistry
     {
@@ -13,10 +15,12 @@
             string originBiome,
             string destinationBody,
             string destinationBiome);
+        List<IRoute> GetRoutes();
         bool HasRoute(
             string originBody,
             string originBiome,
             string destinationBody,
             string destinationBiome);
+        List<string> TransferResourceBlacklist { get; }
     }
 }

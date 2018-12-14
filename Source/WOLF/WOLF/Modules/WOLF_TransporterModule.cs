@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace WOLF
@@ -47,7 +44,7 @@ namespace WOLF
                 return;
             }
 
-            var vesselMass = Convert.ToInt32(vessel.totalMass / 1000d);
+            var vesselMass = Convert.ToInt32(vessel.totalMass);
             if (vesselMass < MINIMUM_PAYLOAD)
             {
                 DisplayMessage(INSUFFICIENT_PAYLOAD_MESSAGE);
@@ -74,9 +71,9 @@ namespace WOLF
                 return;
             }
 
-            var body = vessel.mainBody.name;
-            var biome = GetVesselBiome();
-            if (body == OriginBody && biome == OriginBiome)
+            var destinationBody = vessel.mainBody.name;
+            var destinationBiome = GetVesselBiome();
+            if (destinationBody == OriginBody && destinationBiome == OriginBiome)
             {
                 DisplayMessage(INVALID_CONNECTION_MESSAGE);
                 return;
@@ -90,10 +87,21 @@ namespace WOLF
                 return;
             }
 
-            // TODO - whatever we need to do to register the route with wolf
+            try
+            {
+                _registry.CreateRoute(OriginBody, OriginBiome, destinationBody, destinationBiome, routePayload);
 
-            DisplayMessage(Messenger.SUCCESSFUL_DEPLOYMENT_MESSAGE);
-            ResetRoute();
+                if (OriginBody == destinationBody)
+                    DisplayMessage(string.Format(Messenger.SUCCESSFUL_DEPLOYMENT_MESSAGE, OriginBody));
+                else
+                    DisplayMessage(string.Format(Messenger.SUCCESSFUL_DEPLOYMENT_MESSAGE, OriginBody + " and " + destinationBody));
+
+                ResetRoute();
+            }
+            catch (Exception ex)
+            {
+                DisplayMessage(ex.Message);
+            }
         }
 
         private int CalculateRouteCost()
@@ -103,7 +111,7 @@ namespace WOLF
             if (massDelta < 0)
                 massDelta = 0;
 
-            int massDeltaTonnes = Convert.ToInt32(massDelta / 1000d);
+            int massDeltaTonnes = Convert.ToInt32(massDelta);
             if (massDeltaTonnes < 0)
                 massDeltaTonnes = 0;
 
@@ -112,7 +120,7 @@ namespace WOLF
 
         private int CalculateRoutePayload()
         {
-            return Convert.ToInt32(vessel.totalMass / 1000d);
+            return Convert.ToInt32(vessel.totalMass);
         }
 
         public override void OnStart(StartState state)
@@ -125,7 +133,7 @@ namespace WOLF
 
         private void ToggleEventButtons()
         {
-            Events["CancelRoute"].active = IsConnectedToOrigin;
+            Events["ResetRoute"].active = IsConnectedToOrigin;
             Events["ConnectToDepotEvent"].active = IsConnectedToOrigin;
             Events["ConnectToOrigin"].active = !IsConnectedToOrigin;
 

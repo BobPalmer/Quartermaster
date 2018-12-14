@@ -27,7 +27,7 @@ namespace WOLF
                 {
                     abundance = 0;
                 }
-                resourceList.Add(resource, abundance);
+                resourceList.Add(resource + WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX, abundance);
             }
             return resourceList;
         }

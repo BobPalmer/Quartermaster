@@ -117,7 +117,7 @@ namespace WOLF
             base.OnStart(state);
 
             var scenario = FindObjectOfType<WOLF_ScenarioModule>();
-            _depotRegistry = scenario.ServiceManager.GetService<IDepotRegistry>();
+            _depotRegistry = scenario.ServiceManager.GetService<IRegistryCollection>();
 
             ParseWolfRecipe();
 

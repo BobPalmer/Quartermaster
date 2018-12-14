@@ -20,7 +20,8 @@ namespace WOLF
 
             // Setup dependency injection for WOLF services
             var services = new ServiceCollection();
-            services.AddSingletonService<IDepotRegistry, ScenarioPersister>();
+            services.AddSingletonService<IRegistryCollection, ScenarioPersister>();
+            services.AddService<WOLF_RouteMonitor>();
 
             ServiceManager = new ServiceManager(services);
         }
@@ -29,7 +30,7 @@ namespace WOLF
         {
             base.OnLoad(node);
 
-            var persister = ServiceManager.GetService<IDepotRegistry>();
+            var persister = ServiceManager.GetService<IRegistryCollection>();
             persister.OnLoad(node);
         }
 
@@ -37,7 +38,7 @@ namespace WOLF
         {
             base.OnSave(node);
 
-            var persister = ServiceManager.GetService<IDepotRegistry>();
+            var persister = ServiceManager.GetService<IRegistryCollection>();
             persister.OnSave(node);
         }
     }

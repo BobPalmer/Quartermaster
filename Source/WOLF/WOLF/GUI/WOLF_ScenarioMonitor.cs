@@ -36,9 +36,9 @@ namespace WOLF
 
         private string[] _tabLabels;
         private WOLF_ScenarioModule _wolfScenario;
-        private IDepotRegistry _depotRegistry;
-        private List<Window> _childWindows = new List<Window>();
-        private Dictionary<string, string> _planetDisplayNames;
+        private IRegistryCollection _wolfRegistry;
+        private readonly List<Window> _childWindows = new List<Window>();
+        private WOLF_RouteMonitor _routeMonitor;
 
         /// <summary>
         /// Implementation of <see cref="MonoBehaviour"/>.Awake
@@ -53,7 +53,7 @@ namespace WOLF
 
             texture.LoadImage(File.ReadAllBytes(textureFile));
 
-            this._wolfButton = ApplicationLauncher.Instance.AddModApplication(GuiOn, GuiOff, null, null, null, null,
+            _wolfButton = ApplicationLauncher.Instance.AddModApplication(GuiOn, GuiOff, null, null, null, null,
                 ApplicationLauncher.AppScenes.ALWAYS, texture);
         }
 
@@ -72,8 +72,9 @@ namespace WOLF
         /// </summary>
         void Start()
         {
-            _wolfScenario = HighLogic.FindObjectOfType<WOLF_ScenarioModule>();
-            _depotRegistry = _wolfScenario.ServiceManager.GetService<IDepotRegistry>();
+            _wolfScenario = FindObjectOfType<WOLF_ScenarioModule>();
+            _wolfRegistry = _wolfScenario.ServiceManager.GetService<IRegistryCollection>();
+            _routeMonitor = _wolfScenario.ServiceManager.GetService<WOLF_RouteMonitor>();
 
             if (!_hasInitStyles)
             {
@@ -81,12 +82,11 @@ namespace WOLF
             }
 
             // Setup tab labels
-            _tabLabels = new[] { "Depots", "Harvestable Resources" };
+            _tabLabels = new[] { "Depots", "Harvestable Resources", "Routes" };
 
-            // Cache planet display names
-            _planetDisplayNames = FlightGlobals.Bodies
-                .Select(b => new { b.name, DisplayName = b.bodyName })
-                .ToDictionary(b => b.name, b => b.DisplayName);
+            // Setup child windows
+            if (!_childWindows.Contains(_routeMonitor.ManageTransfersGui))
+                _childWindows.Add(_routeMonitor.ManageTransfersGui);
         }
 
         private void InitStyles()
@@ -140,7 +140,13 @@ namespace WOLF
 
             // Show UI navigation tabs
             GUILayout.BeginHorizontal();
-            activeTab = GUILayout.SelectionGrid(activeTab, _tabLabels, 2, _smButtonStyle);
+            var newActiveTab = GUILayout.SelectionGrid(activeTab, _tabLabels, 3, _smButtonStyle);
+            if (newActiveTab != activeTab)
+            {
+                // If a new tab was selected, hide the route transfer manager window
+                _routeMonitor.ManageTransfersGui.SetVisible(false);
+                activeTab = newActiveTab;
+            }
             GUILayout.EndHorizontal();
 
             // Show the UI for the currently selected tab
@@ -151,6 +157,9 @@ namespace WOLF
                     break;
                 case 1:
                     ShowHarvestableResources();
+                    break;
+                case 2:
+                    _scrollPos = _routeMonitor.DrawWindow(_scrollPos);
                     break;
             }
 
@@ -175,7 +184,7 @@ namespace WOLF
         /// </summary>
         private void ShowResources(Func<IResourceStream, bool> filter, string incomingHeaderLabel = "Incoming", string outgoingHeaderLabel = "Outgoing", string availableHeaderLabel = "Available")
         {
-            _scrollPos = GUILayout.BeginScrollView(_scrollPos, _scrollStyle, GUILayout.Width(600), GUILayout.Height(380));
+            _scrollPos = GUILayout.BeginScrollView(_scrollPos, _scrollStyle, GUILayout.Width(680), GUILayout.Height(380));
             GUILayout.BeginVertical();
 
             try
@@ -189,14 +198,14 @@ namespace WOLF
                 GUILayout.Label(availableHeaderLabel, _labelStyle, GUILayout.Width(80));
                 GUILayout.EndHorizontal();
 
-                var depotsByPlanet = _depotRegistry.GetDepots()
+                var depotsByPlanet = _wolfRegistry.GetDepots()
                     .GroupBy(d => d.Body)
                     .OrderBy(g => g.Key)
                     .ToDictionary(g => g.Key, g => g.Select(d => d).OrderBy(d => d.Biome));
 
                 foreach (var planet in depotsByPlanet)
                 {
-                    var planetDisplayName = _planetDisplayNames[planet.Key];
+                    var planetDisplayName = planet.Key;
 
                     foreach (var depot in planet.Value)
                     {

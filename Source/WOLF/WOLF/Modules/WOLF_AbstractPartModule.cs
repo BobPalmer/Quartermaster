@@ -5,7 +5,7 @@ namespace WOLF
 {
     public abstract class WOLF_AbstractPartModule : PartModule
     {
-        protected IDepotRegistry _depotRegistry;
+        protected IRegistryCollection _registry;
 
         public IRecipe Recipe { get; private set; }
 
@@ -52,7 +52,7 @@ namespace WOLF
             base.OnStart(state);
 
             var scenario = FindObjectOfType<WOLF_ScenarioModule>();
-            _depotRegistry = scenario.ServiceManager.GetService<IDepotRegistry>();
+            _registry = scenario.ServiceManager.GetService<IRegistryCollection>();
 
             ParseRecipe();
         }

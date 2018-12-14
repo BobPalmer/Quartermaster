@@ -3,12 +3,17 @@ using System.Linq;
 
 namespace WOLF
 {
-    public class ScenarioPersister : IDepotRegistry, IRouteRegistry
+    public class ScenarioPersister : IRegistryCollection
     {
         public static readonly string DEPOTS_NODE_NAME = "DEPOTS";
         public static readonly string ROUTES_NODE_NAME = "ROUTES";
         protected List<IDepot> _depots { get; private set; } = new List<IDepot>();
         protected List<IRoute> _routes { get; private set; } = new List<IRoute>();
+
+        public List<string> TransferResourceBlacklist { get; private set; } = new List<string>
+        {
+            "ElectricCharge"
+        };
 
         public IDepot CreateDepot(string body, string biome)
         {
@@ -75,6 +80,11 @@ namespace WOLF
                     && r.DestinationBody == destinationBody
                     && r.DestinationBiome == destinationBiome)
                 .FirstOrDefault();
+        }
+
+        public List<IRoute> GetRoutes()
+        {
+            return _routes.ToList();
         }
 
         public bool HasDepot(string body, string biome)

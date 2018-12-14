@@ -17,7 +17,7 @@ namespace WOLF
             {
                 return Messenger.INVALID_SITUATION_MESSAGE;
             }
-            if (!_depotRegistry.HasDepot(body, biome))
+            if (!_registry.HasDepot(body, biome))
             {
                 return Messenger.MISSING_DEPOT_MESSAGE;
             }
@@ -69,7 +69,7 @@ namespace WOLF
             // Negotiate recipes with the depot
             var body = vessel.mainBody.name;
             var biome = GetVesselBiome();
-            var depot = _depotRegistry.GetDepot(body, biome);
+            var depot = _registry.GetDepot(body, biome);
             var result = depot.Negotiate(recipes);
 
             if (result is FailedNegotiationResult)

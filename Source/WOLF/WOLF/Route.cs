@@ -8,13 +8,13 @@ namespace WOLF
     {
         public string OriginBody { get; protected set; }
         public string OriginBiome { get; protected set; }
+        public IDepot OriginDepot { get; protected set; }
         public string DestinationBody { get; protected set; }
         public string DestinationBiome { get; protected set; }
+        public IDepot DestinationDepot { get; protected set; }
         public int Payload { get; protected set; }
 
         protected readonly Dictionary<string, int> _resources = new Dictionary<string, int>();
-        protected IDepot _originDepot;
-        protected IDepot _destinationDepot;
         private readonly IDepotRegistry _depotRegistry;
         protected static readonly string _routeNodeName = "ROUTE";
         protected static readonly string _resourceNodeName = "RESOURCE";
@@ -37,8 +37,8 @@ namespace WOLF
             }
             Payload = payload;
 
-            _originDepot = depotRegistry.GetDepot(originBody, originBiome);
-            _destinationDepot = depotRegistry.GetDepot(destinationBody, destinationBiome);
+            OriginDepot = depotRegistry.GetDepot(originBody, originBiome);
+            DestinationDepot = depotRegistry.GetDepot(destinationBody, destinationBiome);
         }
 
         /// <summary>
@@ -63,14 +63,14 @@ namespace WOLF
                 { resourceName, quantity }
             };
 
-            var originResult = _originDepot.NegotiateConsumer(resource);
+            var originResult = OriginDepot.NegotiateConsumer(resource);
 
             if (originResult is FailedNegotiationResult)
             {
                 return originResult;
             }
 
-            var destinationResult = _destinationDepot.NegotiateProvider(resource);
+            var destinationResult = DestinationDepot.NegotiateProvider(resource);
 
             if (!_resources.ContainsKey(resourceName))
             {
@@ -81,6 +81,12 @@ namespace WOLF
                 _resources[resourceName] += quantity;
             }
             return destinationResult;
+        }
+
+        public int GetAvailablePayload()
+        {
+            var currentLoad = _resources.Sum(r => r.Value);
+            return Math.Max(0, Payload - currentLoad);
         }
 
         public Dictionary<string, int> GetResources()
@@ -106,14 +112,14 @@ namespace WOLF
                 { resourceName, quantity }
             };
 
-            var destinationResult = _destinationDepot.NegotiateProvider(resource);
+            var destinationResult = DestinationDepot.NegotiateProvider(resource);
 
             if (destinationResult is BrokenNegotiationResult)
             {
                 return destinationResult;
             }
 
-            var originResult = _originDepot.NegotiateConsumer(resource);
+            var originResult = OriginDepot.NegotiateConsumer(resource);
             _resources[resourceName] += quantity;  // this will actually deduct the resources since quantity will be negative
             if (_resources[resourceName] < 1)
             {
@@ -130,6 +136,9 @@ namespace WOLF
             DestinationBody = node.GetValue("DestinationBody");
             DestinationBiome = node.GetValue("DestinationBiome");
             Payload = int.Parse(node.GetValue("Payload"));
+
+            OriginDepot = _depotRegistry.GetDepot(OriginBody, OriginBiome);
+            DestinationDepot = _depotRegistry.GetDepot(DestinationBody, DestinationBiome);
 
             var resourceNodes = node.GetNodes();
             foreach (var resourceNode in resourceNodes)

@@ -8,6 +8,9 @@
             {
                 part.Die();
             }
+
+            // TODO - Kill off Kerbals
+
             vessel.Die();
         }
     }

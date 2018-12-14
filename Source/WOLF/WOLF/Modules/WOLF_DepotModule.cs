@@ -45,7 +45,7 @@ namespace WOLF
                 DisplayMessage(INVALID_SITUATION_MESSAGE);
                 return;
             }
-            if (_depotRegistry.HasDepot(body, biome))
+            if (_registry.HasDepot(body, biome))
             {
                 DisplayMessage(DEPOT_ALREADY_ESTABLISHED_MESSAGE);
                 return;
@@ -67,7 +67,7 @@ namespace WOLF
             }
 
             // Establish depot
-            var depot = _depotRegistry.CreateDepot(body, biome);
+            var depot = _registry.CreateDepot(body, biome);
 
             // Calculate resource abundance and cache resource vein names in scenario module
             var harvestableResources = CalculateAbundance(ParseHarvestableResources());

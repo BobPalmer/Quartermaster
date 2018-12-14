@@ -59,14 +59,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DepotResourceViewModel.cs" />
+    <Compile Include="GUI\Helpers\ComboBox.cs" />
+    <Compile Include="GUI\Helpers\UIHelper.cs" />
     <Compile Include="GUI\Helpers\Utilities.cs" />
     <Compile Include="GUI\Helpers\Window.cs" />
+    <Compile Include="GUI\WOLF_GuiManageTransfers.cs" />
     <Compile Include="GUI\WOLF_RouteMonitor.cs" />
     <Compile Include="GUI\WOLF_ScenarioMonitor.cs" />
     <Compile Include="Helpers\WOLF_Exceptions.cs" />
     <Compile Include="Interfaces\IDepotRegistry.cs" />
     <Compile Include="Interfaces\IRoute.cs" />
     <Compile Include="Interfaces\IRouteRegistry.cs" />
+    <Compile Include="Interfaces\IRegistryCollection.cs" />
     <Compile Include="Messenger.cs" />
     <Compile Include="Modules\WOLF_AbstractPartModule.cs" />
     <Compile Include="Modules\WOLF_CrewModule.cs" />
