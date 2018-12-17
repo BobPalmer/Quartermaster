@@ -69,7 +69,7 @@ namespace WOLF
 
         public List<IDepot> GetDepots()
         {
-            return _depots.ToList();
+            return _depots.ToList() ?? new List<IDepot>();
         }
 
         public IRoute GetRoute(string originBody, string originBiome, string destinationBody, string destinationBiome)
@@ -84,7 +84,7 @@ namespace WOLF
 
         public List<IRoute> GetRoutes()
         {
-            return _routes.ToList();
+            return _routes.ToList() ?? new List<IRoute>();
         }
 
         public bool HasDepot(string body, string biome)

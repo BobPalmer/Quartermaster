@@ -9,6 +9,7 @@ namespace WOLF
         #region Local static and instance variables
         private const string INSUFFICIENT_PAYLOAD_MESSAGE = "This transfer exceeds the available payload capacity.";
         private const string INSUFFICIENT_ORIGIN_RESOURCES_MESSAGE = "This transfer exceeds the availability at the origin depot.";
+        private const string NO_ROUTES_MESSAGE = "There are currently no established routes.";
         private const string ROUTE_NAME_TEMPLATE = " {0}:{1} => {2}:{3} ";
 
         private IRegistryCollection _registry;
@@ -40,48 +41,55 @@ namespace WOLF
         private void Start()
         {
             // Build route list
-            _routes = _registry
-                .GetRoutes()
-                .OrderBy(r => r.OriginBody)
-                    .ThenBy(r => r.OriginBiome)
-                    .ThenBy(r => r.DestinationBody)
-                    .ThenBy(r => r.DestinationBiome)
-                .ToDictionary(
-                    r => string.Format(ROUTE_NAME_TEMPLATE, r.OriginBody, r.OriginBiome, r.DestinationBody, r.DestinationBiome),
-                    r => r);
+            var routes = _registry.GetRoutes();
+            if (routes == null || !routes.Any())
+            {
+                _routes = new Dictionary<string, IRoute>();
+            }
+            else
+            {
+                _routes = routes
+                    .OrderBy(r => r.OriginBody)
+                        .ThenBy(r => r.OriginBiome)
+                        .ThenBy(r => r.DestinationBody)
+                        .ThenBy(r => r.DestinationBiome)
+                    .ToDictionary(
+                        r => string.Format(ROUTE_NAME_TEMPLATE, r.OriginBody, r.OriginBiome, r.DestinationBody, r.DestinationBiome),
+                        r => r);
 
-            var routeNames = _routes.Keys
-                .Select(k => new GUIContent(k))
-                .ToArray();
+                var routeNames = _routes.Keys
+                    .Select(k => new GUIContent(k))
+                    .ToArray();
 
-            // Select the first route
-            SelectRoute(0);
+                // Select the first route
+                SelectRoute(0);
 
-            // Setup gui style for combo boxes
-            GUIStyle listStyle = new GUIStyle();
-            listStyle.normal.textColor = Color.white;
-            listStyle.onHover.background = new Texture2D(2, 2);
-            listStyle.hover.background = listStyle.onHover.background;
-            listStyle.padding.left = 4;
-            listStyle.padding.right = 4;
-            listStyle.padding.top = 4;
-            listStyle.padding.bottom = 4;
+                // Setup gui style for combo boxes
+                GUIStyle listStyle = new GUIStyle();
+                listStyle.normal.textColor = Color.white;
+                listStyle.onHover.background = new Texture2D(2, 2);
+                listStyle.hover.background = listStyle.onHover.background;
+                listStyle.padding.left = 4;
+                listStyle.padding.right = 4;
+                listStyle.padding.top = 4;
+                listStyle.padding.bottom = 4;
 
-            // Create gui combo box for selecting route
-            _routeComboBox = new ComboBox(
-                rect: new Rect(20, 30, 100, 20),
-                buttonContent: routeNames[0],
-                buttonStyle: "button",
-                boxStyle: "box",
-                listContent: routeNames,
-                listStyle: listStyle,
-                onChange: i =>
-                {
-                    SelectRoute(i);
-                }
-            );
+                // Create gui combo box for selecting route
+                _routeComboBox = new ComboBox(
+                    rect: new Rect(20, 30, 100, 20),
+                    buttonContent: routeNames[0],
+                    buttonStyle: "button",
+                    boxStyle: "box",
+                    listContent: routeNames,
+                    listStyle: listStyle,
+                    onChange: i =>
+                    {
+                        SelectRoute(i);
+                    }
+                );
 
-            _routeComboBox.SelectedItemIndex = 0;
+                _routeComboBox.SelectedItemIndex = 0;
+            }
         }
 
         /// <summary>
@@ -94,228 +102,246 @@ namespace WOLF
             GUILayout.BeginHorizontal();
             GUILayout.Label("Route", UIHelper.labelStyle, GUILayout.Width(80));
 
-            // Display Previous button
-            if (GUILayout.Button(UIHelper.leftArrowSymbol, UIHelper.buttonStyle, GUILayout.Width(30), GUILayout.Height(20)))
+            if (_routes.Count < 1)
             {
-                SelectRoute(GetPreviousRouteIndex(_selectedRouteIndex));
-                _routeComboBox.SelectedItemIndex = _selectedRouteIndex;
+                GUILayout.EndHorizontal();  // route selection section
+                GUILayout.Label(string.Empty);
+                GUILayout.Label(NO_ROUTES_MESSAGE);
+
+                // Display Close button
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(string.Empty, UIHelper.labelStyle, GUILayout.Width(140));
+                if (GUILayout.Button("Close", UIHelper.buttonStyle, GUILayout.Width(100)))
+                {
+                    SetVisible(false);
+                }
+                GUILayout.EndHorizontal();
             }
-
-            // Display combo box for route selection
-            _routeComboBox.Show();
-
-            // Display Next button
-            if (GUILayout.Button(UIHelper.rightArrowSymbol, UIHelper.buttonStyle, GUILayout.Width(30), GUILayout.Height(20)))
+            else
             {
-                SelectRoute(GetNextRouteIndex(_selectedRouteIndex));
-                _routeComboBox.SelectedItemIndex = _selectedRouteIndex;
-            }
-            GUILayout.EndHorizontal();  // route selection section
+                // Display Previous button
+                if (GUILayout.Button(UIHelper.leftArrowSymbol, UIHelper.buttonStyle, GUILayout.Width(30), GUILayout.Height(20)))
+                {
+                    SelectRoute(GetPreviousRouteIndex(_selectedRouteIndex));
+                    _routeComboBox.SelectedItemIndex = _selectedRouteIndex;
+                }
 
-            // Create some visual separation between sections
-            GUILayout.Label(string.Empty);
+                // Display combo box for route selection
+                _routeComboBox.Show();
 
-            // Display transferable resources
-            _availableResourceScrollViewPosition = GUILayout.BeginScrollView(_availableResourceScrollViewPosition, GUILayout.MinHeight(130));
+                // Display Next button
+                if (GUILayout.Button(UIHelper.rightArrowSymbol, UIHelper.buttonStyle, GUILayout.Width(30), GUILayout.Height(20)))
+                {
+                    SelectRoute(GetNextRouteIndex(_selectedRouteIndex));
+                    _routeComboBox.SelectedItemIndex = _selectedRouteIndex;
+                }
+                GUILayout.EndHorizontal();  // route selection section
 
-            // Calculate and display available amount for transferrable resources
-            var availablePayload = 0;
-            if (_selectedRoute != null)
-            {
-                availablePayload = _selectedRoute.GetAvailablePayload();
+                // Create some visual separation between sections
+                GUILayout.Label(string.Empty);
 
-                // Table header
+                // Display transferable resources
+                _availableResourceScrollViewPosition = GUILayout.BeginScrollView(_availableResourceScrollViewPosition, GUILayout.MinHeight(130));
+
+                // Calculate and display available amount for transferrable resources
+                var availablePayload = 0;
+                if (_selectedRoute != null)
+                {
+                    availablePayload = _selectedRoute.GetAvailablePayload();
+
+                    // Table header
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(string.Empty, UIHelper.labelStyle, GUILayout.Width(22));
+                    GUILayout.Label(" Resource", UIHelper.whiteLabelStyle, GUILayout.Width(165));
+                    GUILayout.Label("Available", UIHelper.whiteLabelStyle, GUILayout.MinWidth(150));
+                    GUILayout.EndHorizontal();
+
+                    // Table rows
+                    foreach (var resource in _originDepotResources)
+                    {
+                        // Display the table row
+                        GUILayout.BeginHorizontal();
+                        if (GUILayout.Button(UIHelper.downArrowSymbol, UIHelper.buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))
+                        {
+                            _selectedResource = resource.ResourceName;
+                        }
+                        GUILayout.Label(" " + resource.ResourceName, UIHelper.yellowLabelStyle, GUILayout.Width(165));
+                        GUILayout.Label(resource.Available.ToString(), UIHelper.yellowLabelStyle, GUILayout.MinWidth(150));
+                        GUILayout.EndHorizontal();
+                    }
+                }
+                GUILayout.EndScrollView();  // transferable resources list
+
+                if (_selectedResource != null)
+                {
+                    // Calculate origin/destination resource amounts
+                    var originResource = _originDepotResources
+                        .Where(r => r.ResourceName == _selectedResource)
+                        .Single();
+
+                    var destinationResource = _destinationDepotResources
+                        .Where(r => r.ResourceName == _selectedResource)
+                        .SingleOrDefault();
+
+                    var originAvailable = originResource.Available;
+                    var destinationIncoming = destinationResource == null ? 0 : destinationResource.Incoming;
+                    var destinationAvailable = destinationResource == null ? 0 : destinationResource.Available;
+
+                    // Show section for selected resource details and to input transfer amount
+                    GUILayout.BeginHorizontal();
+
+                    // Show section for resource details
+                    GUILayout.BeginVertical();
+
+                    // Show selected resource
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Resource:", UIHelper.whiteLabelStyle, GUILayout.Width(80));
+                    GUILayout.Label(_selectedResource, UIHelper.yellowLabelStyle, GUILayout.Width(120));
+                    GUILayout.EndHorizontal();
+
+                    // Show origin available amount
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Origin:", UIHelper.whiteLabelStyle, GUILayout.Width(80));
+                    GUILayout.Label(originAvailable.ToString(), UIHelper.yellowLabelStyle, GUILayout.Width(120));
+                    GUILayout.EndHorizontal();
+
+                    // Show destination incoming and available amounts
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Destination:", UIHelper.whiteLabelStyle, GUILayout.Width(80));
+                    GUILayout.Label(
+                        string.Format("{0} / {1}", destinationAvailable, destinationIncoming),
+                        UIHelper.yellowLabelStyle,
+                        GUILayout.Width(120)
+                    );
+                    GUILayout.EndHorizontal();
+
+                    GUILayout.EndVertical();  // resource details section
+
+                    // Show section for transfer amount
+                    GUILayout.BeginVertical();
+
+                    // Show transfer amount header
+                    GUILayout.Label("Transfer Amount", UIHelper.centerAlignLabelStyle, GUILayout.Width(165));
+
+                    // Show fill button and text input box
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label(string.Empty, UIHelper.labelStyle, GUILayout.Width(65));
+                    _transferAmountText = GUILayout.TextField(
+                        _transferAmountText, 10, UIHelper.textFieldStyle,
+                        GUILayout.Width(95), GUILayout.Height(25)
+                    );
+                    GUILayout.EndHorizontal();
+
+                    if (GUILayout.Button("Transfer", UIHelper.buttonStyle, GUILayout.Width(165)))
+                    {
+                        // Parse the transfer amount
+                        if (int.TryParse(_transferAmountText, out int amount))
+                        {
+                            if (amount > 0)
+                            {
+                                // Check if adding this transfer amount exceeds the current payload capacity
+                                if (amount > availablePayload)
+                                {
+                                    Messenger.DisplayMessage(INSUFFICIENT_PAYLOAD_MESSAGE);
+                                }
+                                else if (amount > originAvailable)
+                                {
+                                    Messenger.DisplayMessage(INSUFFICIENT_ORIGIN_RESOURCES_MESSAGE);
+                                }
+                                else
+                                {
+                                    var negotiationResult = _selectedRoute.AddResource(_selectedResource, amount);
+
+                                    // The negotiation shouldn't fail at this point. If it does, there's a bug somewhere.
+                                    if (negotiationResult is FailedNegotiationResult)
+                                    {
+                                        Debug.LogError("[WOLF] Failed to negotiate transfer with origin depot.");
+                                        foreach (var resource in (negotiationResult as FailedNegotiationResult).MissingResources)
+                                        {
+                                            Debug.LogError(string.Format("[WOLF] Resource: {0}  Amount: {1}", resource.Key, resource.Value));
+                                        }
+                                    }
+                                    if (negotiationResult is InsufficientPayloadNegotiationResult)
+                                    {
+                                        Debug.LogError("[WOLF] Failed to negotiate transfer.");
+                                        var overage = (negotiationResult as InsufficientPayloadNegotiationResult).MissingPayload;
+                                        {
+                                            Debug.LogError(string.Format("[WOLF] Additional payload required: {0}", overage));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    GUILayout.EndVertical();  // transfer amount section
+
+                    GUILayout.EndHorizontal();  // resource details and transfer amount section
+                }
+
+                // Create some visual separation between sections
+                GUILayout.Label(string.Empty);
+
+                // Display existing transfers
+                _transferResourceScrollViewPosition = GUILayout.BeginScrollView(_transferResourceScrollViewPosition, GUILayout.MinHeight(130));
+
+                // Transfer list header
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(string.Empty, UIHelper.labelStyle, GUILayout.Width(22));
-                GUILayout.Label(" Resource", UIHelper.whiteLabelStyle, GUILayout.Width(165));
-                GUILayout.Label("Available", UIHelper.whiteLabelStyle, GUILayout.MinWidth(150));
+                GUILayout.Label(" Resource", UIHelper.whiteLabelStyle, GUILayout.MinWidth(155));
+                GUILayout.Label("Quantity", UIHelper.whiteLabelStyle, GUILayout.Width(80));
                 GUILayout.EndHorizontal();
 
-                // Table rows
-                foreach (var resource in _originDepotResources)
+                // Transfer list items
+                foreach (var resource in _selectedRoute.GetResources())
                 {
-                    // Display the table row
                     GUILayout.BeginHorizontal();
-                    if (GUILayout.Button(UIHelper.downArrowSymbol, UIHelper.buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))
+                    if (GUILayout.Button(UIHelper.deleteSymbol, UIHelper.buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))
                     {
-                        _selectedResource = resource.ResourceName;
+                        var result = _selectedRoute.RemoveResource(resource.Key, resource.Value);
+                        if (result is BrokenNegotiationResult)
+                        {
+                            foreach (var brokenResource in (result as BrokenNegotiationResult).BrokenDependencies)
+                            {
+                                Messenger.DisplayMessage(brokenResource);
+                            }
+                        }
+                        else if (result is FailedNegotiationResult)
+                        {
+                            foreach (var missingResource in (result as FailedNegotiationResult).MissingResources)
+                            {
+                                Messenger.DisplayMessage(string.Format("Could not add {0} back to origin depot. This is probably a bug.", missingResource.Key));
+                            }
+                        }
                     }
-                    GUILayout.Label(" " + resource.ResourceName, UIHelper.yellowLabelStyle, GUILayout.Width(165));
-                    GUILayout.Label(resource.Available.ToString(), UIHelper.yellowLabelStyle, GUILayout.MinWidth(150));
+                    GUILayout.Label(" " + resource.Key, UIHelper.yellowLabelStyle, GUILayout.MinWidth(155));
+                    GUILayout.Label(resource.Value.ToString(), UIHelper.yellowLabelStyle, GUILayout.Width(80));
                     GUILayout.EndHorizontal();
                 }
-            }
-            GUILayout.EndScrollView();  // transferable resources list
+                GUILayout.EndScrollView();
 
-            if (_selectedResource != null)
-            {
-                // Calculate origin/destination resource amounts
-                var originResource = _originDepotResources
-                    .Where(r => r.ResourceName == _selectedResource)
-                    .Single();
-
-                var destinationResource = _destinationDepotResources
-                    .Where(r => r.ResourceName == _selectedResource)
-                    .SingleOrDefault();
-
-                var originAvailable = originResource.Available;
-                var destinationIncoming = destinationResource == null ? 0 : destinationResource.Incoming;
-                var destinationAvailable = destinationResource == null ? 0 : destinationResource.Available;
-
-                // Show section for selected resource details and to input transfer amount
                 GUILayout.BeginHorizontal();
-
-                // Show section for resource details
-                GUILayout.BeginVertical();
-
-                // Show selected resource
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Resource:", UIHelper.whiteLabelStyle, GUILayout.Width(80));
-                GUILayout.Label(_selectedResource, UIHelper.yellowLabelStyle, GUILayout.Width(120));
+                GUILayout.Label("Available Payload:", UIHelper.whiteLabelStyle, GUILayout.Width(160));
+                GUILayout.Label(availablePayload.ToString(), UIHelper.yellowLabelStyle, GUILayout.Width(150));
                 GUILayout.EndHorizontal();
 
-                // Show origin available amount
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Origin:", UIHelper.whiteLabelStyle, GUILayout.Width(80));
-                GUILayout.Label(originAvailable.ToString(), UIHelper.yellowLabelStyle, GUILayout.Width(120));
+                GUILayout.Label("Total Payload:", UIHelper.whiteLabelStyle, GUILayout.Width(160));
+                GUILayout.Label(_selectedRoute.Payload.ToString(), UIHelper.yellowLabelStyle, GUILayout.Width(150));
                 GUILayout.EndHorizontal();
 
-                // Show destination incoming and available amounts
+                // Display Close button
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Destination:", UIHelper.whiteLabelStyle, GUILayout.Width(80));
-                GUILayout.Label(
-                    string.Format("{0} / {1}", destinationAvailable, destinationIncoming),
-                    UIHelper.yellowLabelStyle,
-                    GUILayout.Width(120)
-                );
-                GUILayout.EndHorizontal();
-
-                GUILayout.EndVertical();  // resource details section
-
-                // Show section for transfer amount
-                GUILayout.BeginVertical();
-
-                // Show transfer amount header
-                GUILayout.Label("Transfer Amount", UIHelper.centerAlignLabelStyle, GUILayout.Width(165));
-
-                // Show fill button and text input box
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(string.Empty, UIHelper.labelStyle, GUILayout.Width(65));
-                _transferAmountText = GUILayout.TextField(
-                    _transferAmountText, 10, UIHelper.textFieldStyle,
-                    GUILayout.Width(95), GUILayout.Height(25)
-                );
-                GUILayout.EndHorizontal();
-
-                if (GUILayout.Button("Transfer", UIHelper.buttonStyle, GUILayout.Width(165)))
+                GUILayout.Label(string.Empty, UIHelper.labelStyle, GUILayout.Width(140));
+                if (GUILayout.Button("Close", UIHelper.buttonStyle, GUILayout.Width(100)))
                 {
-                    // Parse the transfer amount
-                    if (int.TryParse(_transferAmountText, out int amount))
-                    {
-                        if (amount > 0)
-                        {
-                            // Check if adding this transfer amount exceeds the current payload capacity
-                            if (amount > availablePayload)
-                            {
-                                Messenger.DisplayMessage(INSUFFICIENT_PAYLOAD_MESSAGE);
-                            }
-                            else if (amount > originAvailable)
-                            {
-                                Messenger.DisplayMessage(INSUFFICIENT_ORIGIN_RESOURCES_MESSAGE);
-                            }
-                            else
-                            {
-                                var negotiationResult =_selectedRoute.AddResource(_selectedResource, amount);
-
-                                // The negotiation shouldn't fail at this point. If it does, there's a bug somewhere.
-                                if (negotiationResult is FailedNegotiationResult)
-                                {
-                                    Debug.LogError("[WOLF] Failed to negotiate transfer with origin depot.");
-                                    foreach (var resource in (negotiationResult as FailedNegotiationResult).MissingResources)
-                                    {
-                                        Debug.LogError(string.Format("[WOLF] Resource: {0}  Amount: {1}", resource.Key, resource.Value));
-                                    }
-                                }
-                                if (negotiationResult is InsufficientPayloadNegotiationResult)
-                                {
-                                    Debug.LogError("[WOLF] Failed to negotiate transfer.");
-                                    var overage = (negotiationResult as InsufficientPayloadNegotiationResult).MissingPayload;
-                                    {
-                                        Debug.LogError(string.Format("[WOLF] Additional payload required: {0}", overage));
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    ResetAndClose();
                 }
-
-                GUILayout.EndVertical();  // transfer amount section
-
-                GUILayout.EndHorizontal();  // resource details and transfer amount section
-            }
-
-            // Create some visual separation between sections
-            GUILayout.Label(string.Empty);
-
-            // Display existing transfers
-            _transferResourceScrollViewPosition = GUILayout.BeginScrollView(_transferResourceScrollViewPosition, GUILayout.MinHeight(130));
-
-            // Transfer list header
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(string.Empty, UIHelper.labelStyle, GUILayout.Width(22));
-            GUILayout.Label(" Resource", UIHelper.whiteLabelStyle, GUILayout.MinWidth(155));
-            GUILayout.Label("Quantity", UIHelper.whiteLabelStyle, GUILayout.Width(80));
-            GUILayout.EndHorizontal();
-
-            // Transfer list items
-            foreach (var resource in _selectedRoute.GetResources())
-            {
-                GUILayout.BeginHorizontal();
-                if (GUILayout.Button(UIHelper.deleteSymbol, UIHelper.buttonStyle, GUILayout.Width(22), GUILayout.Height(22)))
-                {
-                    var result = _selectedRoute.RemoveResource(resource.Key, resource.Value);
-                    if (result is BrokenNegotiationResult)
-                    {
-                        foreach (var brokenResource in (result as BrokenNegotiationResult).BrokenDependencies)
-                        {
-                            Messenger.DisplayMessage(brokenResource);
-                        }
-                    }
-                    else if (result is FailedNegotiationResult)
-                    {
-                        foreach (var missingResource in (result as FailedNegotiationResult).MissingResources)
-                        {
-                            Messenger.DisplayMessage(string.Format("Could not add {0} back to origin depot. This is probably a bug.", missingResource.Key));
-                        }
-                    }
-                }
-                GUILayout.Label(" " + resource.Key, UIHelper.yellowLabelStyle, GUILayout.MinWidth(155));
-                GUILayout.Label(resource.Value.ToString(), UIHelper.yellowLabelStyle, GUILayout.Width(80));
                 GUILayout.EndHorizontal();
+
+                // Display the contents of the combo boxes
+                _routeComboBox.ShowRest();
             }
-            GUILayout.EndScrollView();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Available Payload:", UIHelper.whiteLabelStyle, GUILayout.Width(160));
-            GUILayout.Label(availablePayload.ToString(), UIHelper.yellowLabelStyle, GUILayout.Width(150));
-            GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Total Payload:", UIHelper.whiteLabelStyle, GUILayout.Width(160));
-            GUILayout.Label(_selectedRoute.Payload.ToString(), UIHelper.yellowLabelStyle, GUILayout.Width(150));
-            GUILayout.EndHorizontal();
-
-            // Display Close button
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(string.Empty, UIHelper.labelStyle, GUILayout.Width(140));
-            if (GUILayout.Button("Close", UIHelper.buttonStyle, GUILayout.Width(100)))
-            {
-                ResetAndClose();
-            }
-            GUILayout.EndHorizontal();
-
-            // Display the contents of the combo boxes
-            _routeComboBox.ShowRest();
         }
 
         /// <summary>

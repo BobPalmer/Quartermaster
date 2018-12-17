@@ -6,12 +6,14 @@ namespace WOLF
     {
         private static readonly int REQUIRED_LIFE_SUPPORT = 1;
         private static readonly int REQUIRED_HABITATION = 1;
-        private static readonly int REQUIRED_CAFETERIA = 1;
+        private static readonly int CO2_OUTPUT = 1;
         private static readonly int MULCH_OUTPUT = 1;
+        private static readonly int WASTEWATER_OUTPUT = 1;
         private static readonly string RESOURCE_NAME_LIFESUPPORT = "LifeSupport";
         private static readonly string RESOURCE_NAME_HABITATION = "Habitation";
-        private static readonly string RESOURCE_NAME_CAFETERIA = "Cafeteria";
+        private static readonly string RESOURCE_NAME_CO2 = "CarbonDioxide";
         private static readonly string RESOURCE_NAME_MULCH = "Mulch";
+        private static readonly string RESOURCE_NAME_WASTEWATER = "WasteWater";
 
         public static readonly string CREW_RESOURCE_SUFFIX = "CrewPoint";
 
@@ -24,15 +26,22 @@ namespace WOLF
             var inputs = new Dictionary<string, int>
             {
                 { RESOURCE_NAME_LIFESUPPORT, 0 },
-                { RESOURCE_NAME_HABITATION, 0 },
-                { RESOURCE_NAME_CAFETERIA, 0 }
+                { RESOURCE_NAME_HABITATION, 0 }
             };
-            var outputs = new Dictionary<string, int>();
+            var outputs = new Dictionary<string, int>
+            {
+                { RESOURCE_NAME_CO2, 0 },
+                { RESOURCE_NAME_MULCH, 0 },
+                { RESOURCE_NAME_WASTEWATER, 0 }
+            };
             foreach (var kerbal in roster)
             {
                 inputs[RESOURCE_NAME_LIFESUPPORT] += REQUIRED_LIFE_SUPPORT;
                 inputs[RESOURCE_NAME_HABITATION] += REQUIRED_HABITATION;
-                inputs[RESOURCE_NAME_CAFETERIA] += REQUIRED_CAFETERIA;
+
+                outputs[RESOURCE_NAME_CO2] += CO2_OUTPUT;
+                outputs[RESOURCE_NAME_MULCH] += MULCH_OUTPUT;
+                outputs[RESOURCE_NAME_WASTEWATER] += WASTEWATER_OUTPUT;
 
                 var resourceName = kerbal.trait + CREW_RESOURCE_SUFFIX;
                 var stars = kerbal.experienceLevel;
@@ -43,14 +52,6 @@ namespace WOLF
                 else
                 {
                     outputs[resourceName] += stars;
-                }
-                if (!outputs.ContainsKey(RESOURCE_NAME_MULCH))
-                {
-                    outputs.Add(RESOURCE_NAME_MULCH, MULCH_OUTPUT);
-                }
-                else
-                {
-                    outputs[RESOURCE_NAME_MULCH] += MULCH_OUTPUT;
                 }
             }
 
