@@ -79,7 +79,7 @@ namespace WOLF
                 return;
             }
 
-            var routeCost = CalculateRouteCost();
+            var routeCost = CalculateRouteCost();  // TODO - deduct route cost from origin
             var routePayload = CalculateRoutePayload();
             if (routePayload < MINIMUM_PAYLOAD)
             {
