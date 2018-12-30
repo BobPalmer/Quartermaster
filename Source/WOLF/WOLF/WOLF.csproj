@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\FOR_RELEASE\GameData\UmbraSpaceIndustries\WOLF\</OutputPath>
+    <OutputPath>..\..\..\..\..\KSP_DEV\GameData\UmbraSpaceIndustries\WOLF\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -40,9 +40,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\KSP_DEV\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
@@ -80,6 +78,7 @@
     <Compile Include="Modules\WOLF_RecipeOption.cs" />
     <Compile Include="Modules\WOLF_RecipeOptionController.cs" />
     <Compile Include="Modules\WOLF_ScenarioModule.cs" />
+    <Compile Include="Modules\WOLF_SurveyModule.cs" />
     <Compile Include="Modules\WOLF_TransporterModule.cs" />
     <Compile Include="NegotiationResults.cs" />
     <Compile Include="Depot.cs" />

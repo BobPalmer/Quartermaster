@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace WOLF
 {
@@ -56,6 +57,19 @@ namespace WOLF
             }
 
             return new Recipe(inputs, outputs);
+        }
+
+        /// <summary>
+        /// Only crew with at least 1 experience point are eligible to work at a WOLF colony!
+        /// </summary>
+        /// <returns></returns>
+        public bool IsCrewEligible()
+        {
+            var roster = vessel.GetVesselCrew();
+            if (roster.Count < 1)
+                return true;
+
+            return !roster.Any(c => c.experienceLevel < 1);
         }
     }
 }

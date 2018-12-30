@@ -12,6 +12,8 @@ namespace WOLF
 
         public string Body { get; private set; }
         public string Biome { get; private set; }
+        public bool IsEstablished { get; private set; } = false;
+        public bool IsSurveyed { get; private set; } = false;
 
         public Depot(string body, string biome)
         {
@@ -31,6 +33,13 @@ namespace WOLF
             var missingResources = new Dictionary<string, int>();
 
             return missingResources;
+        }
+
+        public void Establish()
+        {
+            // Once a depot is established, it should never be unestablished
+            //  So that's why IsEstablished has a private setter
+            IsEstablished = true;
         }
 
         public List<IResourceStream> GetResources()
@@ -205,6 +214,12 @@ namespace WOLF
         {
             Body = node.GetValue("Body");
             Biome = node.GetValue("Biome");
+            bool isEstablished = false;
+            node.TryGetValue("IsEstablished", ref isEstablished);
+            IsEstablished = isEstablished;
+            bool isSurveyed = false;
+            node.TryGetValue("IsSurveyed", ref isSurveyed);
+            IsSurveyed = isSurveyed;
 
             var streamNodes = node.GetNodes();
             foreach (var streamNode in streamNodes)
@@ -226,6 +241,8 @@ namespace WOLF
             var depotNode = node.AddNode(_depotNodeName);
             depotNode.AddValue("Body", Body);
             depotNode.AddValue("Biome", Biome);
+            depotNode.AddValue("IsEstablished", IsEstablished);
+            depotNode.AddValue("IsSurveyed", IsSurveyed);
 
             if (_resourceStreams.Count > 0)
             {
@@ -238,6 +255,13 @@ namespace WOLF
                     streamNode.AddValue("Outgoing", streamValue.Outgoing);
                 }
             }
+        }
+
+        public void Survey()
+        {
+            // Once a biome has been surveyed, it should never be unsurveyed
+            //  So that's why IsSurveyed has a private setter
+            IsSurveyed = true;
         }
     }
 }

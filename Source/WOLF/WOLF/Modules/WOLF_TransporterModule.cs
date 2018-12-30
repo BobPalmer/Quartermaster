@@ -1,12 +1,19 @@
-﻿using System;
+﻿using KSP.Localization;
+using System;
+using System.Text;
 using UnityEngine;
 
 namespace WOLF
 {
+    [KSPModule("Transporter")]
     public class WOLF_TransporterModule : WOLF_ConverterModule
     {
-        private static readonly string INSUFFICIENT_PAYLOAD_MESSAGE = "This vessel is too small to establish a transport route.";
-        private static readonly string INVALID_CONNECTION_MESSAGE = "Destination must be in a different biome.";
+        private static string CANCEL_ROUTE_GUI_NAME = "#"; // "Cancel route";
+        private static string CONNECT_TO_ORIGIN_GUI_NAME = "#"; // "Connect to origin depot";
+        private static string CONNECT_TO_DESTINATION_GUI_NAME = "#"; // "Connect to destination depot";
+        private static string INSUFFICIENT_PAYLOAD_MESSAGE = "#"; // "This vessel is too small to establish a transport route.";
+        private static string INVALID_CONNECTION_MESSAGE = "#"; // "Destination must be in a different biome.";
+
         private static readonly int MINIMUM_PAYLOAD = 1;
         private static readonly int ROUTE_COST_MULTIPLIER = 3;
 
@@ -22,7 +29,7 @@ namespace WOLF
         [KSPField(isPersistant = true)]
         public string OriginBiome;
 
-        [KSPEvent(guiName = "Cancel route", guiActive = true, guiActiveEditor = false)]
+        [KSPEvent(guiActive = true, guiActiveEditor = false)]
         public void ResetRoute()
         {
             OriginBody = string.Empty;
@@ -33,7 +40,7 @@ namespace WOLF
             ToggleEventButtons();
         }
 
-        [KSPEvent(guiName = "Connect to origin depot", guiActive = true, guiActiveEditor = false)]
+        [KSPEvent(guiActive = true, guiActiveEditor = false)]
         public void ConnectToOrigin()
         {
             // Check for issues that would prevent deployment
@@ -123,11 +130,42 @@ namespace WOLF
             return Convert.ToInt32(vessel.totalMass);
         }
 
+        public override string GetInfo()
+        {
+            return PartInfo;
+        }
+
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
 
-            Events["ConnectToDepotEvent"].guiName = "Connect to destination depot";
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_PAYLOAD_MESSAGE", out string payloadMessage))
+            {
+                INSUFFICIENT_PAYLOAD_MESSAGE = payloadMessage;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_INVALID_CONNECTION_MESSAGE", out string invalidConnectionMessage))
+            {
+                INVALID_CONNECTION_MESSAGE = invalidConnectionMessage;
+            }
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_CANCEL_ROUTE_GUI_NAME", out string cancelRouteGuiName))
+            {
+                CANCEL_ROUTE_GUI_NAME = cancelRouteGuiName;
+            }
+            Events["ResetRoute"].guiName = CANCEL_ROUTE_GUI_NAME;
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_CONNECT_TO_ORIGIN_GUI_NAME", out string originGuiName))
+            {
+                CONNECT_TO_ORIGIN_GUI_NAME = originGuiName;
+            }
+            Events["ConnectToOrigin"].guiName = CONNECT_TO_ORIGIN_GUI_NAME;
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_CONNECT_TO_DESTINATION_GUI_NAME", out string destinationGuiName))
+            {
+                CONNECT_TO_DESTINATION_GUI_NAME = destinationGuiName;
+            }
+            Events["ConnectToDepotEvent"].guiName = CONNECT_TO_DESTINATION_GUI_NAME;
+
             ToggleEventButtons();
         }
 

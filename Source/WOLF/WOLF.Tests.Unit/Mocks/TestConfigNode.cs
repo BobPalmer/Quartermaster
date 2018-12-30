@@ -12,6 +12,8 @@
             var depotNode = depotsNode.AddNode(TestDepot.DEPOT_NODE_NAME);
             depotNode.AddValue("Body", "Mun");
             depotNode.AddValue("Biome", "East Crater");
+            depotNode.AddValue("IsEstablished", true);
+            depotNode.AddValue("IsSurveyed", true);
             depotNode.AddValue("Situation", "LANDED");
             var streamNode = depotNode.AddNode(TestDepot.STREAM_NODE_NAME);
             streamNode.AddValue("ResourceName", "Ore");
@@ -25,6 +27,8 @@
             depotNode = depotsNode.AddNode(TestDepot.DEPOT_NODE_NAME);
             depotNode.AddValue("Body", "Minmus");
             depotNode.AddValue("Biome", "Greater Flats");
+            depotNode.AddValue("IsEstablished", true);
+            depotNode.AddValue("IsSurveyed", true);
             depotNode.AddValue("Situation", "LANDED");
             streamNode = depotNode.AddNode(TestDepot.STREAM_NODE_NAME);
             streamNode.AddValue("ResourceName", "Ore");

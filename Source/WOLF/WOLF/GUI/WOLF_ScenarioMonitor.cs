@@ -212,27 +212,30 @@ namespace WOLF
 
                         foreach (var depot in planet.Value)
                         {
-                            GUILayout.BeginHorizontal();
-                            GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", planetDisplayName, depot.Biome), _labelStyle, GUILayout.Width(160));
-                            GUILayout.EndHorizontal();
-
                             var resources = depot.GetResources()
                                 .Where(filter)
                                 .OrderBy(r => r.ResourceName);
 
-                            foreach (var resource in resources)
+                            if (depot.IsEstablished || resources.Any())
                             {
-                                var resourceName = resource.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX)
-                                    ? resource.ResourceName.Remove(resource.ResourceName.Length - WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX.Length)
-                                    : resource.ResourceName;
-
                                 GUILayout.BeginHorizontal();
-                                GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(160));
-                                GUILayout.Label(resourceName, _labelStyle, GUILayout.Width(165));
-                                GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Incoming), _labelStyle, GUILayout.Width(80));
-                                GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Outgoing), _labelStyle, GUILayout.Width(80));
-                                GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Available), _labelStyle, GUILayout.Width(80));
+                                GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", planetDisplayName, depot.Biome), _labelStyle, GUILayout.Width(160));
                                 GUILayout.EndHorizontal();
+
+                                foreach (var resource in resources)
+                                {
+                                    var resourceName = resource.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX)
+                                        ? resource.ResourceName.Remove(resource.ResourceName.Length - WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX.Length)
+                                        : resource.ResourceName;
+
+                                    GUILayout.BeginHorizontal();
+                                    GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(160));
+                                    GUILayout.Label(resourceName, _labelStyle, GUILayout.Width(165));
+                                    GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Incoming), _labelStyle, GUILayout.Width(80));
+                                    GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Outgoing), _labelStyle, GUILayout.Width(80));
+                                    GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Available), _labelStyle, GUILayout.Width(80));
+                                    GUILayout.EndHorizontal();
+                                }
                             }
                         }
                     }

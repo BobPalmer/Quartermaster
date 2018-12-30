@@ -8,13 +8,21 @@ namespace WOLF.Tests.Unit
 {
     public class When_exploring_persistence
     {
-        [Fact]
-        public void Depots_should_be_persisted()
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(true, true)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        public void Depots_should_be_persisted(bool isEstablished, bool isSurveyed)
         {
             var configNode = new ConfigNode();
             var expectedBody = "Mun";
             var expectedBiome = "East Crater";
             var depot = new Depot(expectedBody, expectedBiome);
+            if (isEstablished)
+                depot.Establish();
+            if (isSurveyed)
+                depot.Survey();
             var persister = new TestPersister();
             persister.Depots.Add(depot);
 
@@ -41,10 +49,20 @@ namespace WOLF.Tests.Unit
             var depotNode = depotNodes.First();
             Assert.True(depotNode.HasValue("Body"));
             Assert.True(depotNode.HasValue("Biome"));
+            Assert.True(depotNode.HasValue("IsEstablished"));
+            Assert.True(depotNode.HasValue("IsSurveyed"));
             var bodyValue = depotNode.GetValue("Body");
             var biomeVaue = depotNode.GetValue("Biome");
+            bool establishedValue = false;
+            var establishedValueWasParsed = depotNode.TryGetValue("IsEstablished", ref establishedValue);
+            bool surveyedValue = false;
+            var surveyedValueWasParsed = depotNode.TryGetValue("IsSurveyed", ref surveyedValue);
+            Assert.True(establishedValueWasParsed);
+            Assert.True(surveyedValueWasParsed);
             Assert.Equal(expectedBody, bodyValue);
             Assert.Equal(expectedBiome, biomeVaue);
+            Assert.Equal(isEstablished, establishedValue);
+            Assert.Equal(isSurveyed, surveyedValue);
             Assert.True(depotNode.HasNode("RESOURCE"));
             var resourceNode = depotNode.GetNodes().First();
             Assert.True(resourceNode.HasValue("ResourceName"));
@@ -65,6 +83,8 @@ namespace WOLF.Tests.Unit
             var persister = new TestPersister();
             var expectedBody = "Mun";
             var expectedBiome = "East Crater";
+            var expectedEstablished = true;
+            var expectedSurveyed = true;
             var expectedResourceName = "ElectricCharge";
             var expectedIncomingQuantity = 37;
             var expectedOutgoingQuantity = 12;
@@ -80,6 +100,8 @@ namespace WOLF.Tests.Unit
             var depot = persister.Depots.First();
             Assert.Equal(expectedBody, depot.Body);
             Assert.Equal(expectedBiome, depot.Biome);
+            Assert.Equal(expectedEstablished, depot.IsEstablished);
+            Assert.Equal(expectedSurveyed, depot.IsSurveyed);
             var result = depot.NegotiateConsumer(consumedResources);
             Assert.IsType<OkNegotiationResult>(result);
         }

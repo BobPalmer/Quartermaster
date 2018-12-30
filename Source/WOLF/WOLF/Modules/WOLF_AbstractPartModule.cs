@@ -1,13 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using KSP.Localization;
+using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
+
+using Situations = Vessel.Situations;
 
 namespace WOLF
 {
+    [KSPModule("Converter")]
     public abstract class WOLF_AbstractPartModule : PartModule
     {
         protected IRegistryCollection _registry;
+        protected static readonly List<string> KSC_BIOMES = new List<string>
+        {
+            "KSC",
+            "Runway",
+            "LaunchPad"
+        };
+
+        protected static string NEEDS_TEXT = "#autoLOC_USI_WOLF_NEEDS";  // "Needs"
+        protected static string PROVIDES_TEXT = "#autoLOC_USI_WOLF_PROVIDES";  // "Provides"
 
         public IRecipe Recipe { get; private set; }
+
+        [KSPField]
+        public string PartInfo = "Input something, get something else out.";
 
         [KSPField]
         public string InputResources = string.Empty;
@@ -33,17 +50,91 @@ namespace WOLF
             Messenger.DisplayMessage(message);
         }
 
+        public override string GetInfo()
+        {
+            var info = new StringBuilder();
+            info
+                .AppendLine(PartInfo)
+                .AppendLine();
+
+            if (Recipe == null)
+                ParseRecipe();
+
+            if (Recipe.InputIngredients.Count > 0)
+            {
+                info.AppendFormat("<color=#99FF00>{0}:</color>", NEEDS_TEXT);
+                info.AppendLine();
+                foreach (var resource in Recipe.InputIngredients)
+                {
+                    info
+                        .Append(" - ")
+                        .Append(resource.Key)
+                        .Append(": ")
+                        .AppendFormat("{0:D}", resource.Value)
+                        .AppendLine();
+                }
+            }
+            if (Recipe.OutputIngredients.Count > 0)
+            {
+                info.AppendFormat("<color=#99FF00>{0}:</color>", PROVIDES_TEXT);
+                info.AppendLine();
+                foreach (var resource in Recipe.OutputIngredients)
+                {
+                    info
+                        .Append(" - ")
+                        .Append(resource.Key)
+                        .Append(": ")
+                        .AppendFormat("{0:D}", resource.Value)
+                        .AppendLine();
+                }
+            }
+
+            return info.ToString();
+        }
+
         protected string GetVesselBiome()
         {
             switch (vessel.situation)
             {
-                case Vessel.Situations.LANDED:
-                case Vessel.Situations.PRELAUNCH:
-                    return vessel.landedAt;
-                case Vessel.Situations.ORBITING:
+                case Situations.LANDED:
+                case Situations.PRELAUNCH:
+                    if (string.IsNullOrEmpty(vessel.landedAt))
+                        return ScienceUtil.GetExperimentBiome(vessel.mainBody, vessel.latitude, vessel.longitude);
+                    else
+                        return GetVesselLandedAtBiome(vessel.landedAt);
+                case Situations.ORBITING:
                     return "Orbit";
                 default:
                     return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// If landed at or near KSC, this consolidates all KSC mini biomes down to a single biome.
+        /// </summary>
+        /// <param name="landedAt"><see cref="Vessel.landedAt"/></param>
+        /// <returns></returns>
+        protected string GetVesselLandedAtBiome(string landedAt)
+        {
+            foreach (var biome in KSC_BIOMES)
+            {
+                if (landedAt.StartsWith(biome))
+                    return "KSC";
+            }
+            return landedAt;
+        }
+
+        public override void OnAwake()
+        {
+            base.OnAwake();
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_NEEDS", out string needsText))
+            {
+                NEEDS_TEXT = needsText;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_PROVIDES", out string providesText))
+            {
+                PROVIDES_TEXT = providesText;
             }
         }
 
@@ -79,7 +170,7 @@ namespace WOLF
         public static Dictionary<string, int> ParseRecipeIngredientList(string ingredients)
         {
             var ingredientList = new Dictionary<string, int>();
-            if (ingredients != null && ingredients != string.Empty)
+            if (!string.IsNullOrEmpty(ingredients))
             {
                 var tokens = ingredients.Split(',');
                 if (tokens.Length % 2 != 0)

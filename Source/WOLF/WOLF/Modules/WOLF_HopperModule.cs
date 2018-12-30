@@ -1,21 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using KSP.Localization;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using USITools;
 
 namespace WOLF
 {
+    [KSPModule("Hopper")]
     public class WOLF_HopperModule : USI_Converter
     {
-        private static readonly string ALREADY_CONNECTED_MESSAGE = "This hopper is already connected to a depot!";
-        private static readonly string LOST_CONNECTION_MESSAGE = "This hopper has lost its connection to the depot!";
-        private static readonly string NOT_CONNECTED_MESSAGE = "You must connect this hopper to a depot first!";
+        private static string CONNECT_TO_DEPOT_GUI_NAME = "#autoLOC_USI_WOLF_CONNECT_TO_DEPOT_GUI_NAME"; // "Connect to depot.";
+        private static string ALREADY_CONNECTED_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_ALREADY_CONNECTED_MESSAGE"; // "This hopper is already connected to a depot!";
+        private static string LOST_CONNECTION_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_LOST_CONNECTION_MESSAGE"; // "This hopper has lost its connection to the depot!";
+        private static string NOT_CONNECTED_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_NOT_CONNECTED_MESSAGE"; // "You must connect this hopper to a depot first!";
 
         private IDepotRegistry _depotRegistry;
         private IRecipe _wolfRecipe;
 
         [KSPField]
-        public string InputResources = "";
+        public string DisplayName = "WOLF Hopper";
+
+        [KSPField]
+        public string InputResources = string.Empty;
 
         [KSPField(isPersistant = true)]
         private bool IsConnectedToDepot = false;
@@ -26,7 +32,7 @@ namespace WOLF
         [KSPField(isPersistant = true)]
         private string DepotBody = string.Empty;
 
-        [KSPEvent(guiName = "Connect to depot", active = true, guiActive = true, guiActiveEditor = false)]
+        [KSPEvent(guiName = "changeme", active = true, guiActive = true, guiActiveEditor = false)]
         public void ConnectToDepotEvent()
         {
             // Check for issues that would prevent deployment
@@ -116,6 +122,26 @@ namespace WOLF
         {
             base.OnStart(state);
 
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_HOPPER_ALREADY_CONNECTED_MESSAGE", out string alreadyConnectedMessage))
+            {
+                ALREADY_CONNECTED_MESSAGE = alreadyConnectedMessage;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_HOPPER_LOST_CONNECTION_MESSAGE", out string lostConnectionMessage))
+            {
+                LOST_CONNECTION_MESSAGE = lostConnectionMessage;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_HOPPER_NOT_CONNECTED_MESSAGE", out string notConnectedMessage))
+            {
+                NOT_CONNECTED_MESSAGE = notConnectedMessage;
+            }
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_CONNECT_TO_DEPOT_GUI_NAME", out string connectGuiName))
+            {
+                CONNECT_TO_DEPOT_GUI_NAME = connectGuiName;
+            }
+            Events["ConnectToDepotEvent"].guiName = CONNECT_TO_DEPOT_GUI_NAME;
+
+            // Find the WOLF scenario and parse the hopper recipe
             var scenario = FindObjectOfType<WOLF_ScenarioModule>();
             _depotRegistry = scenario.ServiceManager.GetService<IRegistryCollection>();
 

@@ -5,14 +5,24 @@ namespace WOLF
 {
     public class ScenarioPersister : IRegistryCollection
     {
+        private static readonly string STARTING_BODY = "Kerbin";
+        private static readonly string STARTING_BIOME = "KSC";
+        private static readonly Dictionary<string, int> STARTING_RESOURCES = new Dictionary<string, int>
+        {
+            { "Food", 10 },
+            { "MaterialKits", 10 },
+            { "Oxygen", 10 },
+            { "Water", 10 }
+        };
         public static readonly string DEPOTS_NODE_NAME = "DEPOTS";
         public static readonly string ROUTES_NODE_NAME = "ROUTES";
+
         protected List<IDepot> _depots { get; private set; } = new List<IDepot>();
         protected List<IRoute> _routes { get; private set; } = new List<IRoute>();
 
         public List<string> TransferResourceBlacklist { get; private set; } = new List<string>
         {
-            "ElectricCharge"
+            "Power"
         };
 
         public IDepot CreateDepot(string body, string biome)
@@ -115,6 +125,13 @@ namespace WOLF
                     var depot = new Depot(bodyValue, biomeValue);
                     depot.OnLoad(depotNode);
                     _depots.Add(depot);
+                }
+                if (_depots.Count < 1)
+                {
+                    // Setup a starting depot on Kerbin
+                    var starterDepot = CreateDepot(STARTING_BODY, STARTING_BIOME);
+                    starterDepot.Establish();
+                    starterDepot.NegotiateProvider(STARTING_RESOURCES);
                 }
             }
             if (node.HasNode(ROUTES_NODE_NAME))

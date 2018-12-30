@@ -1,25 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using KSP.Localization;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 namespace WOLF
 {
+    [KSPModule("Recipe Changer")]
     public class WOLF_RecipeOptionController : PartModule
     {
-        private static readonly string SWAP_SUCCESS_MESSAGE = "Reconfiguration from {0} to {1} completed.";
+        private static string SWAP_SUCCESS_MESSAGE = "#autoLOC_USI_WOLF_RC_SWAP_SUCCESS_MESSAGE"; // "Reconfiguration from {0} to {1} completed.";
+        private static string SELECTED_RECIPE_GUI_NAME = "#autoLOC_USI_WOLF_RC_SELECTED_RECIPE_GUI_NAME"; // "Recipe";
+        private static string NEXT_RECIPE_GUI_NAME = "#autoLOC_USI_WOLF_RC_NEXT_RECIPE_GUI_NAME"; // "Next Recipe";
+        private static string PREVIOUS_RECIPE_GUI_NAME = "#autoLOC_USI_WOLF_RC_PREVIOUS_RECIPE_GUI_NAME"; // "Previous Recipe";
 
         private readonly List<WOLF_RecipeOption> _recipeOptions = new List<WOLF_RecipeOption>();
         private WOLF_AbstractPartModule _converter;
         private int _nextRecipeIndex;
         private bool _hasStartFinished = false;
 
+        [KSPField]
+        public string PartInfo = string.Empty;
+
         [KSPField(isPersistant = true)]
         private int selectedRecipeIndex;
 
-        [KSPField(guiName = "Recipe", guiActive = true, guiActiveEditor = true)]
+        [KSPField(guiActive = true, guiActiveEditor = true)]
         private string selectedRecipeName = "???";
 
-        [KSPEvent(guiName = "Switch to [None]", active = true, guiActive = true, guiActiveEditor = true, guiActiveUnfocused = true, unfocusedRange = 10f)]
+        [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiActiveUnfocused = true, unfocusedRange = 10f)]
         public void SwapRecipe()
         {
             var previousRecipeName = selectedRecipeName;
@@ -31,7 +39,7 @@ namespace WOLF
             ApplyRecipe();
         }
 
-        [KSPEvent(guiName = "Next Recipe", active = true, guiActive = true, guiActiveEditor = true, guiActiveUnfocused = true, unfocusedRange = 10f)]
+        [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiActiveUnfocused = true, unfocusedRange = 10f)]
         public void MoveNext()
         {
             if (_recipeOptions.Count < 2)
@@ -61,7 +69,7 @@ namespace WOLF
             UpdateMenu();
         }
 
-        [KSPEvent(guiName = "Previous Recipe", active = true, guiActive = true, guiActiveEditor = true, guiActiveUnfocused = true, unfocusedRange = 10f)]
+        [KSPEvent(active = true, guiActive = true, guiActiveEditor = true, guiActiveUnfocused = true, unfocusedRange = 10f)]
         public void MovePrevious()
         {
             if (_recipeOptions.Count < 2)
@@ -92,8 +100,36 @@ namespace WOLF
             UpdateMenu();
         }
 
+        public override string GetInfo()
+        {
+            return PartInfo;
+        }
+
         public override void OnStart(StartState state)
         {
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_RC_SWAP_SUCCESS_MESSAGE", out string swapSuccessMessage))
+            {
+                SWAP_SUCCESS_MESSAGE = swapSuccessMessage;
+            }
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_RC_SELECTED_RECIPE_GUI_NAME", out string selectedRecipeGuiName))
+            {
+                SELECTED_RECIPE_GUI_NAME = selectedRecipeGuiName;
+            }
+            Fields["selectedRecipeName"].guiName = SELECTED_RECIPE_GUI_NAME;
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_RC_NEXT_RECIPE_GUI_NAME", out string nextRecipeGuiName))
+            {
+                NEXT_RECIPE_GUI_NAME = nextRecipeGuiName;
+            }
+            Events["MoveNext"].guiName = NEXT_RECIPE_GUI_NAME;
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_RC_PREVIOUS_RECIPE_GUI_NAME", out string previousRecipeGuiName))
+            {
+                PREVIOUS_RECIPE_GUI_NAME = previousRecipeGuiName;
+            }
+            Events["MovePrevious"].guiName = PREVIOUS_RECIPE_GUI_NAME;
+
             var recipeOptions = part.FindModulesImplementing<WOLF_RecipeOption>();
             if (!recipeOptions.Any())
             {

@@ -1,9 +1,13 @@
-﻿using System.Linq;
+﻿using KSP.Localization;
+using System.Linq;
 
 namespace WOLF
 {
     public class WOLF_ConverterModule : WOLF_AbstractPartModule
     {
+        protected static string CONNECT_TO_DEPOT_GUI_NAME = "#autoLOC_USI_WOLF_CONNECT_TO_DEPOT_GUI_NAME"; // "Connect to depot.";
+        protected static string CREW_NOT_ELIGIBLE_MESSAGE = "#autoLOC_USI_WOLF_CREW_NOT_ELIGIBLE_MESSAGE"; // "Kerbals need some experience before they can work in a colony.";
+
         /// <summary>
         /// Checks for issues that would prevent connecting to a depot.
         /// </summary>
@@ -57,7 +61,12 @@ namespace WOLF
                 .FirstOrDefault() as WOLF_CrewModule;
             if (crewModule == null)
             {
-                DisplayMessage("Could not find crew module.");
+                DisplayMessage("BUG: Could not find crew module.");
+                return;
+            }
+            else if (!crewModule.IsCrewEligible())
+            {
+                DisplayMessage(CREW_NOT_ELIGIBLE_MESSAGE);
                 return;
             }
             else
@@ -90,7 +99,16 @@ namespace WOLF
         {
             base.OnStart(state);
 
-            Events["ConnectToDepotEvent"].guiName = "Connect to depot";
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_CREW_NOT_ELIGIBLE_MESSAGE", out string crewNotEligibleMessage))
+            {
+                CREW_NOT_ELIGIBLE_MESSAGE = crewNotEligibleMessage;
+            }
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_CONNECT_TO_DEPOT_GUI_NAME", out string connectGuiName))
+            {
+                CONNECT_TO_DEPOT_GUI_NAME = connectGuiName;
+            }
+            Events["ConnectToDepotEvent"].guiName = CONNECT_TO_DEPOT_GUI_NAME;
         }
     }
 }
