@@ -49,53 +49,43 @@ namespace WOLF
                 GUILayout.EndHorizontal();
 
                 var routes = _routeRegistry.GetRoutes();
-                if (routes != null && routes.Any())
+                if (routes != null && routes.Count > 0)
                 {
-                    var routesByOrigin = _routeRegistry.GetRoutes()
-                        .GroupBy(r => new { r.OriginBody, r.OriginBiome })
-                        .OrderBy(g => g.Key)
-                        .ToDictionary(g => g.Key, g => g
-                            .Select(r => r)
-                            .OrderBy(r => r.DestinationBody)
-                            .ThenBy(r => r.DestinationBiome));
+                    var orderedRoutes = routes
+                        .OrderBy(r => r.OriginBody)
+                            .ThenBy(r => r.OriginBiome)
+                            .ThenBy(r => r.DestinationBody)
+                            .ThenBy(r => r.DestinationBiome);
 
-                    foreach (var routeGroup in routesByOrigin)
+                    foreach (var route in orderedRoutes)
                     {
-                        foreach (var route in routeGroup.Value)
+                        GUILayout.BeginHorizontal();
+                        GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", route.OriginBody, route.OriginBiome), _labelStyle, GUILayout.Width(160));
+                        GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", route.DestinationBody, route.DestinationBiome), _labelStyle, GUILayout.Width(160));
+                        GUILayout.Label(string.Format("<color=#FFFFFF>{0}</color>", route.Payload), _labelStyle, GUILayout.Width(90));
+                        GUILayout.EndHorizontal();
+
+                        var resources = route.GetResources()
+                            .OrderBy(r => r.Key);
+
+                        foreach (var resource in resources)
                         {
-                            var originBody = routeGroup.Key.OriginBody;
-                            var originBiome = routeGroup.Key.OriginBiome;
-                            var destinationBody = route.DestinationBody;
-                            var destinationBiome = route.DestinationBiome;
+                            var resourceName = resource.Key;
 
                             GUILayout.BeginHorizontal();
-                            GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", originBody, originBiome), _labelStyle, GUILayout.Width(160));
-                            GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", destinationBody, destinationBiome), _labelStyle, GUILayout.Width(160));
-                            GUILayout.Label(string.Format("<color=#FFFFFF>{0}</color>", route.Payload), _labelStyle, GUILayout.Width(90));
+                            GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(160));
+                            GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(160));
+                            GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(90));
+                            GUILayout.Label(resourceName, _labelStyle, GUILayout.Width(160));
+                            GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Value), _labelStyle, GUILayout.Width(70));
                             GUILayout.EndHorizontal();
-
-                            var resources = route.GetResources()
-                                .OrderBy(r => r.Key);
-
-                            foreach (var resource in resources)
-                            {
-                                var resourceName = resource.Key;
-
-                                GUILayout.BeginHorizontal();
-                                GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(160));
-                                GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(160));
-                                GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(90));
-                                GUILayout.Label(resourceName, _labelStyle, GUILayout.Width(160));
-                                GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Value), _labelStyle, GUILayout.Width(70));
-                                GUILayout.EndHorizontal();
-                            }
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogError(string.Format("[WOLF] ERROR in {0}: " + ex.StackTrace, GetType().Name));
+                Debug.LogError(string.Format("[WOLF] ERROR in {0}: {1} Stack Trace: {2}", GetType().Name, ex.Message, ex.StackTrace));
             }
             finally
             {

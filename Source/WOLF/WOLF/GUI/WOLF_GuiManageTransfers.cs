@@ -42,7 +42,7 @@ namespace WOLF
         {
             // Build route list
             var routes = _registry.GetRoutes();
-            if (routes == null || !routes.Any())
+            if (routes == null || routes.Count < 1)
             {
                 _routes = new Dictionary<string, IRoute>();
             }
