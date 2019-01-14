@@ -22,6 +22,8 @@ namespace WOLF
 
         public List<string> TransferResourceBlacklist { get; private set; } = new List<string>
         {
+            "LifeSupport",
+            "Habitation",
             "Power"
         };
 

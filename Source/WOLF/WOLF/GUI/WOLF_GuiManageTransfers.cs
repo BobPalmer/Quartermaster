@@ -24,7 +24,6 @@ namespace WOLF
         private List<IResourceStream> _originDepotResources;
         private List<IResourceStream> _destinationDepotResources;
         private Dictionary<string, IRoute> _routes;
-        private List<string> _blacklistedResources = new List<string>();
         #endregion
 
         public WOLF_GuiManageTransfers(IRegistryCollection registry)
@@ -358,6 +357,7 @@ namespace WOLF
             _originDepotResources = _selectedRoute.OriginDepot
                 .GetResources()
                 .Where(r => !r.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX)
+                    && !r.ResourceName.EndsWith(WOLF_CrewModule.CREW_RESOURCE_SUFFIX)
                     && !_registry.TransferResourceBlacklist.Contains(r.ResourceName))
                 .OrderBy(r => r.ResourceName)
                 .ToList();

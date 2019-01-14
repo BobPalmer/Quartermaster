@@ -25,7 +25,8 @@ namespace WOLF
             {
                 return Messenger.MISSING_DEPOT_MESSAGE;
             }
-            var otherDepotModules = vessel.FindPartModulesImplementing<WOLF_DepotModule>();
+            var otherDepotModules = vessel.FindPartModulesImplementing<WOLF_DepotModule>()
+                .Where(p => !(p is WOLF_SurveyModule));
             if (otherDepotModules.Any())
             {
                 return Messenger.INVALID_DEPOT_PART_ATTACHMENT_MESSAGE;
@@ -52,6 +53,7 @@ namespace WOLF
             // Get recipes from all attached WOLF PartModules
             var recipes = vessel
                 .FindPartModulesImplementing<WOLF_AbstractPartModule>()
+                .Where(p => !(p is WOLF_SurveyModule))
                 .Select(p => p.Recipe)
                 .ToList();
 

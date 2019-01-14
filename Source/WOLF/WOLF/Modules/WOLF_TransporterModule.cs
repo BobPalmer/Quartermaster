@@ -1,7 +1,7 @@
 ﻿using KSP.Localization;
 using System;
-using System.Text;
-using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace WOLF
 {
@@ -11,11 +11,22 @@ namespace WOLF
         private static string CANCEL_ROUTE_GUI_NAME = "#"; // "Cancel route";
         private static string CONNECT_TO_ORIGIN_GUI_NAME = "#"; // "Connect to origin depot";
         private static string CONNECT_TO_DESTINATION_GUI_NAME = "#"; // "Connect to destination depot";
-        private static string INSUFFICIENT_PAYLOAD_MESSAGE = "#"; // "This vessel is too small to establish a transport route.";
-        private static string INVALID_CONNECTION_MESSAGE = "#"; // "Destination must be in a different biome.";
+        private static string CURRENT_BIOME_GUI_NAME = "#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME"; // "Current biome";
+        private static string INSUFFICIENT_PAYLOAD_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_PAYLOAD_MESSAGE"; // "This vessel is too small to establish a transport route.";
+        private static string INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE"; // "Origin depot needs an additional ({0}) TransportCredits to support this route."; 
+        private static string INVALID_CONNECTION_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INVALID_CONNECTION_MESSAGE"; // "Destination must be in a different biome.";
+        private static string ROUTE_COST_GUI_NAME = "#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_COST_GUI_NAME";  // "Route cost";
 
         private static readonly int MINIMUM_PAYLOAD = 1;
-        private static readonly int ROUTE_COST_MULTIPLIER = 3;
+        private static readonly double ROUTE_COST_MULTIPLIER = 1d;
+
+        private double _nextBiomeUpdate = 0d;
+
+        [KSPField(guiActive = true, guiActiveEditor = false, guiName = "Current biome")]
+        public string CurrentBiome = string.Empty;
+
+        [KSPField(guiActive = true, guiActiveEditor = false, guiName = "Route cost")]
+        public int RouteCost = 0;
 
         [KSPField(isPersistant = true)]
         public bool IsConnectedToOrigin = false;
@@ -86,7 +97,6 @@ namespace WOLF
                 return;
             }
 
-            var routeCost = CalculateRouteCost();  // TODO - deduct route cost from origin
             var routePayload = CalculateRoutePayload();
             if (routePayload < MINIMUM_PAYLOAD)
             {
@@ -94,9 +104,33 @@ namespace WOLF
                 return;
             }
 
+            var originDepot = _registry.GetDepot(OriginBody, OriginBiome);
+            var routeCost = CalculateRouteCost();
+            if (routeCost > 0)
+            {
+                // Make sure origin depot has enough TransportCredits to support the route
+                var originTransportCredits = originDepot.GetResources()
+                    .Where(r => r.ResourceName == "TransportCredits")
+                    .FirstOrDefault();
+                if (originTransportCredits == null)
+                {
+                    DisplayMessage(string.Format(INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE, routeCost));
+                    return;
+                }
+                if (originTransportCredits.Available < routeCost)
+                {
+                    DisplayMessage(string.Format(INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE, routeCost - originTransportCredits.Available));
+                    return;
+                }
+            }
+
             try
             {
                 _registry.CreateRoute(OriginBody, OriginBiome, destinationBody, destinationBiome, routePayload);
+                if (routeCost > 0)
+                {
+                    originDepot.NegotiateConsumer(new Dictionary<string, int> { { "TransportCredits", routeCost } });
+                }
 
                 if (OriginBody == destinationBody)
                     DisplayMessage(string.Format(Messenger.SUCCESSFUL_DEPLOYMENT_MESSAGE, OriginBody));
@@ -116,13 +150,10 @@ namespace WOLF
             var endingMass = vessel.totalMass;
             var massDelta = StartingVesselMass - vessel.totalMass;
             if (massDelta < 0)
-                massDelta = 0;
+                return 0;
 
-            int massDeltaTonnes = Convert.ToInt32(massDelta);
-            if (massDeltaTonnes < 0)
-                massDeltaTonnes = 0;
-
-            return massDeltaTonnes * ROUTE_COST_MULTIPLIER;
+            var routeCost = massDelta * ROUTE_COST_MULTIPLIER;
+            return Math.Max(Convert.ToInt32(routeCost), 0);
         }
 
         private int CalculateRoutePayload()
@@ -143,10 +174,26 @@ namespace WOLF
             {
                 INSUFFICIENT_PAYLOAD_MESSAGE = payloadMessage;
             }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE", out string tCredsMessage))
+            {
+                INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE = tCredsMessage;
+            }
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_INVALID_CONNECTION_MESSAGE", out string invalidConnectionMessage))
             {
                 INVALID_CONNECTION_MESSAGE = invalidConnectionMessage;
             }
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME", out string currentBiomeGuiName))
+            {
+                CURRENT_BIOME_GUI_NAME = currentBiomeGuiName;
+            }
+            Fields["CurrentBiome"].guiName = CURRENT_BIOME_GUI_NAME;
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_COST_GUI_NAME", out string routeCostGuiName))
+            {
+                ROUTE_COST_GUI_NAME = routeCostGuiName;
+            }
+            Fields["RouteCost"].guiName = ROUTE_COST_GUI_NAME;
 
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_CANCEL_ROUTE_GUI_NAME", out string cancelRouteGuiName))
             {
@@ -176,6 +223,21 @@ namespace WOLF
             Events["ConnectToOrigin"].active = !IsConnectedToOrigin;
 
             MonoUtilities.RefreshContextWindows(part);
+        }
+
+        void Update()
+        {
+            // Display current biome and route cost in PAW
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                var now = Planetarium.GetUniversalTime();
+                if (now >= _nextBiomeUpdate)
+                {
+                    _nextBiomeUpdate = now + 1d;  // wait one second between biome updates
+                    CurrentBiome = GetVesselBiome();
+                    RouteCost = CalculateRouteCost();
+                }
+            }
         }
     }
 }
