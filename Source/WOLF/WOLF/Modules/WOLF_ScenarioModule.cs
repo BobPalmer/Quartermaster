@@ -21,6 +21,7 @@ namespace WOLF
             // Setup dependency injection for WOLF services
             var services = new ServiceCollection();
             services.AddSingletonService<IRegistryCollection, ScenarioPersister>();
+            services.AddService<WOLF_PlanningMonitor>();
             services.AddService<WOLF_RouteMonitor>();
 
             ServiceManager = new ServiceManager(services);

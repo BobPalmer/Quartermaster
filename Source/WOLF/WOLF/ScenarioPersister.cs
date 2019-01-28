@@ -22,9 +22,12 @@ namespace WOLF
 
         public List<string> TransferResourceBlacklist { get; private set; } = new List<string>
         {
+            "Lab",
             "LifeSupport",
             "Habitation",
-            "Power"
+            "Maintenance",
+            "Power",
+            "TransportCredits"
         };
 
         public IDepot CreateDepot(string body, string biome)

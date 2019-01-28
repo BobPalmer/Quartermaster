@@ -7,9 +7,9 @@ namespace WOLF
     {
         private static readonly int REQUIRED_LIFE_SUPPORT = 1;
         private static readonly int REQUIRED_HABITATION = 1;
-        private static readonly int CO2_OUTPUT = 1;
-        private static readonly int MULCH_OUTPUT = 1;
-        private static readonly int WASTEWATER_OUTPUT = 1;
+        private static readonly int CO2_OUTPUT = 0;
+        private static readonly int MULCH_OUTPUT = 0;
+        private static readonly int WASTEWATER_OUTPUT = 0;
         private static readonly string RESOURCE_NAME_LIFESUPPORT = "LifeSupport";
         private static readonly string RESOURCE_NAME_HABITATION = "Habitation";
         private static readonly string RESOURCE_NAME_CO2 = "CarbonDioxide";
@@ -17,10 +17,15 @@ namespace WOLF
         private static readonly string RESOURCE_NAME_WASTEWATER = "WasteWater";
 
         public static readonly string CREW_RESOURCE_SUFFIX = "CrewPoint";
+        public static readonly int CREW_RESOURCE_MULTIPLIER = 2;
 
         public IRecipe GetCrewRecipe()
         {
-            var roster = vessel.GetVesselCrew();
+            return GetCrewRecipe(vessel.GetVesselCrew());
+        }
+
+        public static IRecipe GetCrewRecipe(List<ProtoCrewMember> roster)
+        {
             if (roster.Count < 1)
                 return new Recipe();
 
@@ -45,7 +50,7 @@ namespace WOLF
                 outputs[RESOURCE_NAME_WASTEWATER] += WASTEWATER_OUTPUT;
 
                 var resourceName = kerbal.trait + CREW_RESOURCE_SUFFIX;
-                var stars = kerbal.experienceLevel;
+                var stars = kerbal.experienceLevel * CREW_RESOURCE_MULTIPLIER;
                 if (!outputs.ContainsKey(resourceName))
                 {
                     outputs.Add(resourceName, stars);

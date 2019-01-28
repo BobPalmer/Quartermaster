@@ -62,6 +62,7 @@
     <Compile Include="GUI\Helpers\Utilities.cs" />
     <Compile Include="GUI\Helpers\Window.cs" />
     <Compile Include="GUI\WOLF_GuiManageTransfers.cs" />
+    <Compile Include="GUI\WOLF_PlanningMonitor.cs" />
     <Compile Include="GUI\WOLF_RouteMonitor.cs" />
     <Compile Include="GUI\WOLF_ScenarioMonitor.cs" />
     <Compile Include="Helpers\WOLF_Exceptions.cs" />
