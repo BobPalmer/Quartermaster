@@ -8,7 +8,6 @@ namespace WOLF
     public class WOLF_DepotModule : WOLF_AbstractPartModule
     {
         private static string CANNOT_ADD_CREW_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_CANNOT_ADD_CREW_MESSAGE"; // "Kerbals cannot live at this depot yet.";
-        private static string CURRENT_BIOME_GUI_NAME = "#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME"; // "Current biome";
         private static string DEPOT_ALREADY_ESTABLISHED_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_ALREADY_ESTABLISHED_MESSAGE"; // "A depot has already been established here!";
         private static string ESTABLISH_DEPOT_GUI_NAME = "#autoLOC_USI_WOLF_ESTABLISH_DEPOT_GUI_NAME"; // "Establish depot."
         private static string INVALID_SITUATION_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_INVALID_SITUATION_MESSAGE"; // "Can only estabish a depot when landed on the surface or in orbit.";
@@ -17,11 +16,6 @@ namespace WOLF
         private static string SURVEY_ALREADY_COMPLETED_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_SURVEY_ALREADY_COMPLETE_MESSAGE"; // "A survey has already been completed in this biome!";
 
         public const string HARVESTABLE_RESOURCE_SUFFIX = "Vein";
-
-        [KSPField(guiActive = true, guiActiveEditor = false, guiName = "Current biome test", isPersistant = false)]
-        public string CurrentBiome = "???";
-
-        private double _nextBiomeUpdate = 0d;
 
         protected Dictionary<string, int> CalculateAbundance()
         {
@@ -167,32 +161,11 @@ namespace WOLF
                 SURVEY_ALREADY_COMPLETED_MESSAGE = surveyCompletedMessage;
             }
 
-            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME", out string currentBiomeGuiName))
-            {
-                CURRENT_BIOME_GUI_NAME = currentBiomeGuiName;
-            }
-            Fields["CurrentBiome"].guiName = CURRENT_BIOME_GUI_NAME;
-
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_ESTABLISH_DEPOT_GUI_NAME", out string establishGuiName))
             {
                 ESTABLISH_DEPOT_GUI_NAME = establishGuiName;
             }
             Events["ConnectToDepotEvent"].guiName = ESTABLISH_DEPOT_GUI_NAME;
-        }
-
-        void Update()
-        {
-            // Display current biome in PAW
-            if (HighLogic.LoadedSceneIsFlight)
-            {
-                var now = Planetarium.GetUniversalTime();
-                if (now >= _nextBiomeUpdate)
-                {
-                    _nextBiomeUpdate = now + 1d;  // wait one second between biome updates
-                    CurrentBiome = GetVesselBiome();
-                    //MonoUtilities.RefreshContextWindows(part);
-                }
-            }
         }
     }
 }

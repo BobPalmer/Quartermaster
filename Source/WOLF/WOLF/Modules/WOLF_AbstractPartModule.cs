@@ -10,18 +10,23 @@ namespace WOLF
     [KSPModule("Converter")]
     public abstract class WOLF_AbstractPartModule : PartModule
     {
+        protected double _nextBiomeUpdate = 0d;
         protected IRegistryCollection _registry;
+
+        protected static string CURRENT_BIOME_GUI_NAME = "#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME"; // "Current biome";
         protected static readonly List<string> KSC_BIOMES = new List<string>
         {
             "KSC",
             "Runway",
             "LaunchPad"
         };
-
         protected static string NEEDS_TEXT = "#autoLOC_USI_WOLF_NEEDS";  // "Needs"
         protected static string PROVIDES_TEXT = "#autoLOC_USI_WOLF_PROVIDES";  // "Provides"
 
         public IRecipe Recipe { get; private set; }
+
+        [KSPField(guiActive = true, guiActiveEditor = false, guiName = "Current biome test", isPersistant = false)]
+        public string CurrentBiome = "???";
 
         [KSPField]
         public string PartInfo = "Input something, get something else out.";
@@ -142,6 +147,12 @@ namespace WOLF
         {
             base.OnStart(state);
 
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME", out string currentBiomeGuiName))
+            {
+                CURRENT_BIOME_GUI_NAME = currentBiomeGuiName;
+            }
+            Fields["CurrentBiome"].guiName = CURRENT_BIOME_GUI_NAME;
+
             var scenario = FindObjectOfType<WOLF_ScenarioModule>();
             _registry = scenario.ServiceManager.GetService<IRegistryCollection>();
 
@@ -194,6 +205,20 @@ namespace WOLF
             }
 
             return ingredientList;
+        }
+
+        void Update()
+        {
+            // Display current biome in PAW
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                var now = Planetarium.GetUniversalTime();
+                if (now >= _nextBiomeUpdate)
+                {
+                    _nextBiomeUpdate = now + 1d;  // wait one second between biome updates
+                    CurrentBiome = GetVesselBiome();
+                }
+            }
         }
     }
 }
