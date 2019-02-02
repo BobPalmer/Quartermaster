@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -6,7 +7,10 @@ namespace WOLF
 {
     public class WOLF_RouteMonitor
     {
+        private bool _displayAllToggle = false;
         private readonly IRouteRegistry _routeRegistry;
+        private readonly Dictionary<IRoute, bool> _routeDisplayStatus
+            = new Dictionary<IRoute, bool>();
         private GUIStyle _windowStyle;
         private GUIStyle _labelStyle;
         private GUIStyle _scrollStyle;
@@ -30,7 +34,7 @@ namespace WOLF
 
             try
             {
-                // Display manage transfers window
+                // Display manage transfers button
                 GUILayout.BeginHorizontal();
                 GUILayout.Label(string.Empty, UIHelper.labelStyle, GUILayout.Width(520));
                 if (GUILayout.Button("Manage Transfers", UIHelper.buttonStyle, GUILayout.Width(120)))
@@ -41,8 +45,18 @@ namespace WOLF
 
                 // Display column headers
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Origin", _labelStyle, GUILayout.Width(160));
-                GUILayout.Label("Destination", _labelStyle, GUILayout.Width(160));
+                if (GUILayout.Button(_displayAllToggle ? "-" : "+", UIHelper.buttonStyle, GUILayout.Width(20), GUILayout.Height(20)))
+                {
+                    _displayAllToggle = !_displayAllToggle;
+                    var depotKeys = _routeDisplayStatus.Keys.ToArray();
+                    for (int i = 0; i < depotKeys.Length; i++)
+                    {
+                        var key = depotKeys[i];
+                        _routeDisplayStatus[key] = _displayAllToggle;
+                    }
+                }
+                GUILayout.Label("Origin", _labelStyle, GUILayout.Width(150));
+                GUILayout.Label("Destination", _labelStyle, GUILayout.Width(150));
                 GUILayout.Label("Cargo Space", _labelStyle, GUILayout.Width(90));
                 GUILayout.Label("Resource", _labelStyle, GUILayout.Width(160));
                 GUILayout.Label("Quantity", _labelStyle, GUILayout.Width(70));
@@ -59,26 +73,50 @@ namespace WOLF
 
                     foreach (var route in orderedRoutes)
                     {
+                        if (!_routeDisplayStatus.ContainsKey(route))
+                        {
+                            _routeDisplayStatus.Add(route, false);
+                        }
+
+                        var visible = _routeDisplayStatus[route];
+
                         GUILayout.BeginHorizontal();
-                        GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", route.OriginBody, route.OriginBiome), _labelStyle, GUILayout.Width(160));
-                        GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", route.DestinationBody, route.DestinationBiome), _labelStyle, GUILayout.Width(160));
+                        if (GUILayout.Button(visible ? "-" : "+", UIHelper.buttonStyle, GUILayout.Width(20), GUILayout.Height(20)))
+                        {
+                            _routeDisplayStatus[route] = !_routeDisplayStatus[route];
+                            visible = _routeDisplayStatus[route];
+                            _displayAllToggle = visible;
+                        }
+                        GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", route.OriginBody, route.OriginBiome), _labelStyle, GUILayout.Width(150));
+                        GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", route.DestinationBody, route.DestinationBiome), _labelStyle, GUILayout.Width(150));
                         GUILayout.Label(string.Format("<color=#FFFFFF>{0}</color>", route.Payload), _labelStyle, GUILayout.Width(90));
                         GUILayout.EndHorizontal();
 
-                        var resources = route.GetResources()
-                            .OrderBy(r => r.Key);
-
-                        foreach (var resource in resources)
+                        if (visible)
                         {
-                            var resourceName = resource.Key;
+                            var resources = route.GetResources()
+                                .OrderBy(r => r.Key);
 
-                            GUILayout.BeginHorizontal();
-                            GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(160));
-                            GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(160));
-                            GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(90));
-                            GUILayout.Label(resourceName, _labelStyle, GUILayout.Width(160));
-                            GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Value), _labelStyle, GUILayout.Width(70));
-                            GUILayout.EndHorizontal();
+                            if (resources.Any())
+                            {
+                                foreach (var resource in resources)
+                                {
+                                    var resourceName = resource.Key;
+
+                                    GUILayout.BeginHorizontal();
+                                    GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(410));
+                                    GUILayout.Label(resourceName, _labelStyle, GUILayout.Width(160));
+                                    GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Value), _labelStyle, GUILayout.Width(70));
+                                    GUILayout.EndHorizontal();
+                                }
+                            }
+                            else
+                            {
+                                GUILayout.BeginHorizontal();
+                                GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(410));
+                                GUILayout.Label("None", _labelStyle, GUILayout.Width(160));
+                                GUILayout.EndHorizontal();
+                            }
                         }
                     }
                 }
