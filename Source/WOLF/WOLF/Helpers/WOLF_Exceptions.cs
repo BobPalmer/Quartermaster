@@ -11,4 +11,13 @@ namespace WOLF
         {
         }
     }
+
+    public class RouteInsufficientPayloadException : Exception
+    {
+        private static readonly string EXCEPTION_MESSAGE = "WOLF routes require a payload of at least 1.";
+
+        public RouteInsufficientPayloadException(): base(EXCEPTION_MESSAGE)
+        {
+        }
+    }
 }

@@ -16,6 +16,42 @@ namespace WOLF.Tests.Unit
         }
 
         [Fact]
+        public void Should_not_be_established_by_default()
+        {
+            var depot = new TestDepot();
+
+            Assert.False(depot.IsEstablished);
+        }
+
+        [Fact]
+        public void Should_not_be_surveyed_by_default()
+        {
+            var depot = new TestDepot();
+
+            Assert.False(depot.IsSurveyed);
+        }
+
+        [Fact]
+        public void Can_establish_depot()
+        {
+            var depot = new TestDepot();
+
+            depot.Establish();
+
+            Assert.True(depot.IsEstablished);
+        }
+
+        [Fact]
+        public void Can_survey_depot()
+        {
+            var depot = new TestDepot();
+
+            depot.Survey();
+
+            Assert.True(depot.IsSurveyed);
+        }
+
+        [Fact]
         public void Can_show_resource_streams()
         {
             var depot = new TestDepot();
@@ -184,7 +220,7 @@ namespace WOLF.Tests.Unit
         [Theory]
         [InlineData("Ore", 1, 2, true)]
         [InlineData("Ore", 0, 2, false)]
-        public void Should_not_allow_contracts_if_resources_are_not_available(string resourceName, int availableQuantity, int requestedQuantity, bool resourceExists)
+        public void Should_not_allow_consumer_negotiation_if_resources_are_not_available(string resourceName, int availableQuantity, int requestedQuantity, bool resourceExists)
         {
             var depot = new TestDepot();
             if (resourceExists)

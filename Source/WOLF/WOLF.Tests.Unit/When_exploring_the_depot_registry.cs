@@ -14,7 +14,7 @@ namespace WOLF.Tests.Unit
             var expectedBody = "Mun";
             var expectedBiome = "East Crater";
 
-            var depot = registry.AddDepot(expectedBody, expectedBiome);
+            var depot = registry.CreateDepot(expectedBody, expectedBiome);
 
             Assert.Contains(depot, registry.Depots);
         }
@@ -25,7 +25,7 @@ namespace WOLF.Tests.Unit
             var registry = new TestPersister();
             var expectedBody = "Mun";
             var expectedBiome = "East Crater";
-            registry.AddDepot(expectedBody, expectedBiome);
+            registry.CreateDepot(expectedBody, expectedBiome);
 
             var hasDepot = registry.HasDepot(expectedBody, expectedBiome);
             var depot = registry.GetDepot(expectedBody, expectedBiome);
@@ -43,8 +43,8 @@ namespace WOLF.Tests.Unit
             var expectedBiome1 = "East Crater";
             var expectedBiome2 = "Farside Crater";
             var expectedDepots = new List<IDepot>();
-            var expectedDepot1 = registry.AddDepot(expectedBody, expectedBiome1);
-            var expectedDepot2 = registry.AddDepot(expectedBody, expectedBiome2);
+            var expectedDepot1 = registry.CreateDepot(expectedBody, expectedBiome1);
+            var expectedDepot2 = registry.CreateDepot(expectedBody, expectedBiome2);
 
             var depots = registry.GetDepots();
 
@@ -61,9 +61,9 @@ namespace WOLF.Tests.Unit
             var registry = new TestPersister();
             var expectedBody = "Mun";
             var expectedBiome = "East Crater";
-            var firstDepot = registry.AddDepot(expectedBody, expectedBiome);
+            var firstDepot = registry.CreateDepot(expectedBody, expectedBiome);
 
-            var secondDepot = registry.AddDepot(expectedBody, expectedBiome);
+            var secondDepot = registry.CreateDepot(expectedBody, expectedBiome);
 
             Assert.Equal(firstDepot, secondDepot);
             var depots = registry.Depots.Where(d => d.Body == expectedBody && d.Biome == expectedBiome);

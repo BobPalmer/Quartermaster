@@ -1,10 +1,25 @@
-﻿namespace WOLF
+﻿using System.Linq;
+
+namespace WOLF
 {
+    [KSPModule("Harvester")]
     public class WOLF_HarvesterModule : WOLF_ConverterModule
     {
         private int CalculateAbundance(string resourceName)
         {
             return 1;
+        }
+
+        public override string GetInfo()
+        {
+            if (part.FindModulesImplementing<WOLF_RecipeOption>().Any())
+            {
+                return string.Empty;
+            }
+            else
+            {
+                return base.GetInfo();
+            }
         }
 
         public override void OnStart(StartState state)

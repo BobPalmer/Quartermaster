@@ -9,7 +9,13 @@ using UnityEngine;
 namespace WOLF
 {
     [KSPAddon(KSPAddon.Startup.EditorAny, false)]
-    public class WOLF_ScenarioMonitor_Editor : WOLF_ScenarioMonitor { }
+    public class WOLF_ScenarioMonitor_Editor : WOLF_ScenarioMonitor
+    {
+        public WOLF_ScenarioMonitor_Editor()
+        {
+            _isEditor = true;
+        }
+    }
 
     [KSPAddon(KSPAddon.Startup.Flight, false)]
     public class WOLF_ScenarioMonitor_Flight : WOLF_ScenarioMonitor { }
@@ -22,23 +28,27 @@ namespace WOLF
 
     public class WOLF_ScenarioMonitor : MonoBehaviour
     {
-        private ApplicationLauncherButton _wolfButton;
-        private Rect _windowPosition = new Rect(300, 60, 700, 460);
-        private GUIStyle _windowStyle;
+        private readonly List<Window> _childWindows = new List<Window>();
+        private readonly Dictionary<IDepot, bool> _depotDisplayStatus
+            = new Dictionary<IDepot, bool>();
+        private bool _displayAllToggle = false;
+        private bool _hasInitStyles = false;
+        protected bool _isEditor = false;
         private GUIStyle _labelStyle;
+        private WOLF_PlanningMonitor _planningMonitor;
+        private WOLF_RouteMonitor _routeMonitor;
+        private Vector2 _scrollPos = Vector2.zero;
         private GUIStyle _scrollStyle;
         private GUIStyle _smButtonStyle;
-        private Vector2 _scrollPos = Vector2.zero;
-        private bool _hasInitStyles = false;
-
-        public static bool renderDisplay = false;
-        public int activeTab = 0;
-
         private string[] _tabLabels;
+        private Rect _windowPosition = new Rect(300, 60, 700, 460);
+        private GUIStyle _windowStyle;
+        private ApplicationLauncherButton _wolfButton;
+        private IRegistryCollection _wolfRegistry;
         private WOLF_ScenarioModule _wolfScenario;
-        private IDepotRegistry _depotRegistry;
-        private List<Window> _childWindows = new List<Window>();
-        private Dictionary<string, string> _planetDisplayNames;
+
+        public static bool showGui = false;
+        public int activeTab = 0;
 
         /// <summary>
         /// Implementation of <see cref="MonoBehaviour"/>.Awake
@@ -53,18 +63,18 @@ namespace WOLF
 
             texture.LoadImage(File.ReadAllBytes(textureFile));
 
-            this._wolfButton = ApplicationLauncher.Instance.AddModApplication(GuiOn, GuiOff, null, null, null, null,
+            _wolfButton = ApplicationLauncher.Instance.AddModApplication(GuiOn, GuiOff, null, null, null, null,
                 ApplicationLauncher.AppScenes.ALWAYS, texture);
         }
 
         public void GuiOn()
         {
-            renderDisplay = true;
+            showGui = true;
         }
 
         public void GuiOff()
         {
-            renderDisplay = false;
+            showGui = false;
         }
 
         /// <summary>
@@ -72,8 +82,10 @@ namespace WOLF
         /// </summary>
         void Start()
         {
-            _wolfScenario = HighLogic.FindObjectOfType<WOLF_ScenarioModule>();
-            _depotRegistry = _wolfScenario.ServiceManager.GetService<IDepotRegistry>();
+            _wolfScenario = FindObjectOfType<WOLF_ScenarioModule>();
+            _wolfRegistry = _wolfScenario.ServiceManager.GetService<IRegistryCollection>();
+            _routeMonitor = _wolfScenario.ServiceManager.GetService<WOLF_RouteMonitor>();
+            _planningMonitor = _wolfScenario.ServiceManager.GetService<WOLF_PlanningMonitor>();
 
             if (!_hasInitStyles)
             {
@@ -81,20 +93,21 @@ namespace WOLF
             }
 
             // Setup tab labels
-            _tabLabels = new[] { "Depots", "Harvestable Resources" };
+            _tabLabels = new[] { "Depots", "Harvestable Resources", "Routes" };
+            if (_isEditor)
+                _tabLabels = _tabLabels.Concat(new string[] { "Planner" }).ToArray();
 
-            // Cache planet display names
-            _planetDisplayNames = FlightGlobals.Bodies
-                .Select(b => new { b.name, DisplayName = b.bodyName })
-                .ToDictionary(b => b.name, b => b.DisplayName);
+            // Setup child windows
+            if (!_childWindows.Contains(_routeMonitor.ManageTransfersGui))
+                _childWindows.Add(_routeMonitor.ManageTransfersGui);
         }
 
         private void InitStyles()
         {
             _windowStyle = new GUIStyle(HighLogic.Skin.window)
             {
-                fixedWidth = 700,
-                fixedHeight = 460f
+                fixedWidth = 700f,
+                fixedHeight = 900f
             };
             _labelStyle = new GUIStyle(HighLogic.Skin.label);
             _scrollStyle = new GUIStyle(HighLogic.Skin.scrollView);
@@ -112,7 +125,7 @@ namespace WOLF
         {
             try
             {
-                if (!renderDisplay)
+                if (!showGui)
                     return;
 
                 // Draw main window
@@ -132,7 +145,7 @@ namespace WOLF
         }
 
         /// <summary>
-        /// Displays the main WOLF UI
+        /// Displays the outer WOLF UI
         /// </summary>
         private void OnWindow(int windowId)
         {
@@ -140,7 +153,13 @@ namespace WOLF
 
             // Show UI navigation tabs
             GUILayout.BeginHorizontal();
-            activeTab = GUILayout.SelectionGrid(activeTab, _tabLabels, 2, _smButtonStyle);
+            var newActiveTab = GUILayout.SelectionGrid(activeTab, _tabLabels, _tabLabels.Length, _smButtonStyle);
+            if (newActiveTab != activeTab)
+            {
+                // If a new tab was selected, hide the route transfer manager window
+                _routeMonitor.ManageTransfersGui.SetVisible(false);
+                activeTab = newActiveTab;
+            }
             GUILayout.EndHorizontal();
 
             // Show the UI for the currently selected tab
@@ -151,6 +170,12 @@ namespace WOLF
                     break;
                 case 1:
                     ShowHarvestableResources();
+                    break;
+                case 2:
+                    _scrollPos = _routeMonitor.DrawWindow(_scrollPos);
+                    break;
+                case 3:
+                    _scrollPos = _planningMonitor.DrawWindow(_scrollPos);
                     break;
             }
 
@@ -171,56 +196,88 @@ namespace WOLF
         }
 
         /// <summary>
-        /// Displays the UI for WOLF
+        /// Displays the inner WOLF UI depot and harvestable windows
         /// </summary>
-        private void ShowResources(Func<IResourceStream, bool> filter, string incomingHeaderLabel = "Incoming", string outgoingHeaderLabel = "Outgoing", string availableHeaderLabel = "Available")
+        private void ShowResources(Func<IResourceStream, bool> resourceFilter, string incomingHeaderLabel = "Incoming", string outgoingHeaderLabel = "Outgoing", string availableHeaderLabel = "Available")
         {
-            _scrollPos = GUILayout.BeginScrollView(_scrollPos, _scrollStyle, GUILayout.Width(600), GUILayout.Height(380));
+            _scrollPos = GUILayout.BeginScrollView(_scrollPos, _scrollStyle, GUILayout.Width(680), GUILayout.Height(830));
             GUILayout.BeginVertical();
 
             try
             {
                 // Display column headers
                 GUILayout.BeginHorizontal();
-                GUILayout.Label("Body/Biome", _labelStyle, GUILayout.Width(160));
-                GUILayout.Label("Resource", _labelStyle, GUILayout.Width(165));
+                if (GUILayout.Button(_displayAllToggle ? "-" : "+", UIHelper.buttonStyle, GUILayout.Width(20), GUILayout.Height(20)))
+                {
+                    _displayAllToggle = !_displayAllToggle;
+                    var depotKeys = _depotDisplayStatus.Keys.ToArray();
+                    for (int i = 0; i < depotKeys.Length; i++)
+                    {
+                        var key = depotKeys[i];
+                        _depotDisplayStatus[key] = _displayAllToggle;
+                    }
+                }
+                GUILayout.Label("Body/Biome", _labelStyle, GUILayout.Width(150));
+                GUILayout.Label("Resource", _labelStyle, GUILayout.Width(155));
                 GUILayout.Label(incomingHeaderLabel, _labelStyle, GUILayout.Width(80));
                 GUILayout.Label(outgoingHeaderLabel, _labelStyle, GUILayout.Width(80));
                 GUILayout.Label(availableHeaderLabel, _labelStyle, GUILayout.Width(80));
                 GUILayout.EndHorizontal();
 
-                var depotsByPlanet = _depotRegistry.GetDepots()
-                    .GroupBy(d => d.Body)
-                    .OrderBy(g => g.Key)
-                    .ToDictionary(g => g.Key, g => g.Select(d => d).OrderBy(d => d.Biome));
-
-                foreach (var planet in depotsByPlanet)
+                var depots = _wolfRegistry.GetDepots();
+                if (depots != null && depots.Any())
                 {
-                    var planetDisplayName = _planetDisplayNames[planet.Key];
+                    var depotsByPlanet = depots
+                        .GroupBy(d => d.Body)
+                        .OrderBy(g => g.Key)
+                        .ToDictionary(g => g.Key, g => g.Select(d => d).OrderBy(d => d.Biome));
 
-                    foreach (var depot in planet.Value)
+                    foreach (var planet in depotsByPlanet)
                     {
-                        GUILayout.BeginHorizontal();
-                        GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", planetDisplayName, depot.Biome), _labelStyle, GUILayout.Width(160));
-                        GUILayout.EndHorizontal();
+                        var planetDisplayName = planet.Key;
 
-                        var resources = depot.GetResources()
-                            .Where(filter)
-                            .OrderBy(r => r.ResourceName);
-
-                        foreach (var resource in resources)
+                        foreach (var depot in planet.Value)
                         {
-                            var resourceName = resource.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX)
-                                ? resource.ResourceName.Remove(resource.ResourceName.Length - WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX.Length)
-                                : resource.ResourceName;
+                            if (!_depotDisplayStatus.ContainsKey(depot))
+                            {
+                                _depotDisplayStatus.Add(depot, false);
+                            }
 
-                            GUILayout.BeginHorizontal();
-                            GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(160));
-                            GUILayout.Label(resourceName, _labelStyle, GUILayout.Width(165));
-                            GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Incoming), _labelStyle, GUILayout.Width(80));
-                            GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Outgoing), _labelStyle, GUILayout.Width(80));
-                            GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Available), _labelStyle, GUILayout.Width(80));
-                            GUILayout.EndHorizontal();
+                            var resources = depot.GetResources()
+                                .Where(resourceFilter)
+                                .OrderBy(r => r.ResourceName);
+
+                            if (depot.IsEstablished || resources.Any())
+                            {
+                                var visible = _depotDisplayStatus[depot];
+                                GUILayout.BeginHorizontal();
+                                if (GUILayout.Button(visible ? "-" : "+", UIHelper.buttonStyle, GUILayout.Width(20), GUILayout.Height(20)))
+                                {
+                                    _depotDisplayStatus[depot] = !_depotDisplayStatus[depot];
+                                    visible = _depotDisplayStatus[depot];
+                                    _displayAllToggle = visible;
+                                }
+                                GUILayout.Label(string.Format("<color=#FFFFFF>{0}:{1}</color>", planetDisplayName, depot.Biome), _labelStyle, GUILayout.Width(160));
+                                GUILayout.EndHorizontal();
+
+                                if (visible)
+                                {
+                                    foreach (var resource in resources)
+                                    {
+                                        var resourceName = resource.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX)
+                                            ? resource.ResourceName.Remove(resource.ResourceName.Length - WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX.Length)
+                                            : resource.ResourceName;
+
+                                        GUILayout.BeginHorizontal();
+                                        GUILayout.Label(string.Empty, _labelStyle, GUILayout.Width(170));
+                                        GUILayout.Label(resourceName, _labelStyle, GUILayout.Width(155));
+                                        GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Incoming), _labelStyle, GUILayout.Width(80));
+                                        GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Outgoing), _labelStyle, GUILayout.Width(80));
+                                        GUILayout.Label(string.Format("<color=#FFD900>{0}</color>", resource.Available), _labelStyle, GUILayout.Width(80));
+                                        GUILayout.EndHorizontal();
+                                    }
+                                }
+                            }
                         }
                     }
                 }

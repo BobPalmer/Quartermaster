@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\FOR_RELEASE\GameData\UmbraSpaceIndustries\WOLF\</OutputPath>
+    <OutputPath>..\..\..\..\..\KSP_DEV\GameData\UmbraSpaceIndustries\WOLF\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -40,9 +40,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\KSP_DEV\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
@@ -59,11 +57,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DepotResourceViewModel.cs" />
+    <Compile Include="GUI\Helpers\ComboBox.cs" />
+    <Compile Include="GUI\Helpers\UIHelper.cs" />
     <Compile Include="GUI\Helpers\Utilities.cs" />
     <Compile Include="GUI\Helpers\Window.cs" />
+    <Compile Include="GUI\WOLF_GuiManageTransfers.cs" />
+    <Compile Include="GUI\WOLF_PlanningMonitor.cs" />
+    <Compile Include="GUI\WOLF_RouteMonitor.cs" />
     <Compile Include="GUI\WOLF_ScenarioMonitor.cs" />
     <Compile Include="Helpers\WOLF_Exceptions.cs" />
     <Compile Include="Interfaces\IDepotRegistry.cs" />
+    <Compile Include="Interfaces\IRoute.cs" />
+    <Compile Include="Interfaces\IRouteRegistry.cs" />
+    <Compile Include="Interfaces\IRegistryCollection.cs" />
     <Compile Include="Messenger.cs" />
     <Compile Include="Modules\WOLF_AbstractPartModule.cs" />
     <Compile Include="Modules\WOLF_CrewModule.cs" />
@@ -73,12 +79,16 @@
     <Compile Include="Modules\WOLF_RecipeOption.cs" />
     <Compile Include="Modules\WOLF_RecipeOptionController.cs" />
     <Compile Include="Modules\WOLF_ScenarioModule.cs" />
+    <Compile Include="Modules\WOLF_SurveyModule.cs" />
+    <Compile Include="Modules\WOLF_TransporterModule.cs" />
     <Compile Include="NegotiationResults.cs" />
     <Compile Include="Depot.cs" />
     <Compile Include="Interfaces\IDepot.cs" />
     <Compile Include="Interfaces\IResourceStream.cs" />
     <Compile Include="Poof.cs" />
+    <Compile Include="ResourceManager.cs" />
     <Compile Include="ResourceStream.cs" />
+    <Compile Include="Route.cs" />
     <Compile Include="ScenarioPersister.cs" />
     <Compile Include="Interfaces\IPersistenceAware.cs" />
     <Compile Include="Interfaces\IRecipe.cs" />
