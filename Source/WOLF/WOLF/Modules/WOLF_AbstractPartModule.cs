@@ -99,8 +99,9 @@ namespace WOLF
 
         protected string GetVesselBiome()
         {
+            vessel.checkLanded();
             switch (vessel.situation)
-            {
+            {                
                 case Situations.LANDED:
                 case Situations.PRELAUNCH:
                     if (string.IsNullOrEmpty(vessel.landedAt))
