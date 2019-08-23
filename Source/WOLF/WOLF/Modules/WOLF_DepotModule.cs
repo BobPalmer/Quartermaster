@@ -20,7 +20,17 @@ namespace WOLF
         protected Dictionary<string, int> CalculateAbundance()
         {
             // TODO - Pull resource abundance based on situation and if the planet has an atmos
-            return CalculateAbundance(new HarvestTypes[] { HarvestTypes.Planetary });
+            vessel.checkLanded();
+            vessel.checkSplashed();
+
+            if(vessel.Splashed )
+            {
+                return CalculateAbundance(new HarvestTypes[] { HarvestTypes.Oceanic , HarvestTypes.Atmospheric});
+            }
+            else
+            {
+                return CalculateAbundance(new HarvestTypes[] { HarvestTypes.Planetary , HarvestTypes.Atmospheric });
+            }
         }
 
         protected Dictionary<string,int> CalculateAbundance(HarvestTypes[] harvestTypes)
