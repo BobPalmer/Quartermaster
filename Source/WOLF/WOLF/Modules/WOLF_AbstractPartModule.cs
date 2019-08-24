@@ -97,7 +97,7 @@ namespace WOLF
             return info.ToString();
         }
 
-        protected string GetVesselBiome()
+        public static string GetVesselBiome(Vessel vessel)
         {
             vessel.checkLanded();
             switch (vessel.situation)
@@ -115,12 +115,17 @@ namespace WOLF
             }
         }
 
+        protected string GetVesselBiome()
+        {
+            return GetVesselBiome(vessel);
+        }
+
         /// <summary>
         /// If landed at or near KSC, this consolidates all KSC mini biomes down to a single biome.
         /// </summary>
         /// <param name="landedAt"><see cref="Vessel.landedAt"/></param>
         /// <returns></returns>
-        protected string GetVesselLandedAtBiome(string landedAt)
+        protected static string GetVesselLandedAtBiome(string landedAt)
         {
             foreach (var biome in KSC_BIOMES)
             {
