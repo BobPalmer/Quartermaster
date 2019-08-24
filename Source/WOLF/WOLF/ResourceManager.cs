@@ -11,6 +11,12 @@ namespace WOLF
         public const double RESOURCE_ABUNDANCE_MULTIPLIER = 100d;
         public const double RESOURCE_ABUNDANCE_RADIUS_MULT = 250d;
 
+        private static readonly List<string> _allowedResources = new List<string>
+        {
+            "Dirt", "ExoticMinerals", "Gypsum", "Hydrates", "MetallicOre", "Minerals",
+            "Ore", "RareMetals", "Silicates", "Substrate", "Water"
+        };
+
         public static Dictionary<string, int> GetResourceAbundance(int bodyIndex, double altitude, double latitude, double longitude, HarvestTypes[] harvestTypes)
         {
             var abundanceRequest = new AbundanceRequest
@@ -43,14 +49,17 @@ namespace WOLF
                         abundance = 0;
                     }
 
-                    var wolfResourceName = resource + WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX;
-                    if (resourceList.ContainsKey(wolfResourceName))
+                    if (_allowedResources.Contains(resource))
                     {
-                        resourceList[wolfResourceName] += abundance;
-                    }
-                    else
-                    {
-                        resourceList.Add(wolfResourceName, abundance);
+                        var wolfResourceName = resource + WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX;
+                        if (resourceList.ContainsKey(wolfResourceName))
+                        {
+                            resourceList[wolfResourceName] += abundance;
+                        }
+                        else
+                        {
+                            resourceList.Add(wolfResourceName, abundance);
+                        }
                     }
                 }
             }
