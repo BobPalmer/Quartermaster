@@ -149,6 +149,7 @@ namespace WOLF
             if (vessel != null)
             {
                 vessel.OnJustAboutToBeDestroyed += OnVesselDestroyed;
+                GameEvents.OnVesselRecoveryRequested.Add(OnVesselRecovered);
             }
         }
 
@@ -156,6 +157,15 @@ namespace WOLF
         {
             ReleaseResources();
             vessel.OnJustAboutToBeDestroyed -= OnVesselDestroyed;
+            GameEvents.OnVesselRecoveryRequested.Remove(OnVesselRecovered);
+        }
+
+        void OnVesselRecovered(Vessel vessel)
+        {
+            if (vessel == this.vessel)
+            {
+                OnVesselDestroyed();
+            }
         }
 
         public void ParseWolfRecipe()
@@ -171,7 +181,6 @@ namespace WOLF
 
         protected void ReleaseResources()
         {
-            Debug.Log("[WOLF] Trying to release resources back to depot.");
             var body = vessel.mainBody.name;
             var biome = WOLF_AbstractPartModule.GetVesselBiome(vessel);
             var depot = _depotRegistry.GetDepot(body, biome);
