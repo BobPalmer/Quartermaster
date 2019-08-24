@@ -8,10 +8,9 @@ namespace WOLF
     [KSPModule("Transporter")]
     public class WOLF_TransporterModule : WOLF_ConverterModule
     {
-        private static string CANCEL_ROUTE_GUI_NAME = "#"; // "Cancel route";
-        private static string CONNECT_TO_ORIGIN_GUI_NAME = "#"; // "Connect to origin depot";
-        private static string CONNECT_TO_DESTINATION_GUI_NAME = "#"; // "Connect to destination depot";
-        private static string CURRENT_BIOME_GUI_NAME = "#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME"; // "Current biome";
+        private static string CANCEL_ROUTE_GUI_NAME = "#autoLOC_USI_WOLF_TRANSPORTER_CANCEL_ROUTE_GUI_NAME"; // "Cancel route";
+        private static string CONNECT_TO_ORIGIN_GUI_NAME = "#autoLOC_USI_WOLF_TRANSPORTER_CONNECT_TO_ORIGIN_GUI_NAME"; // "Connect to origin depot";
+        private static string CONNECT_TO_DESTINATION_GUI_NAME = "#autoLOC_USI_WOLF_TRANSPORTER_CONNECT_TO_DESTINATION_GUI_NAME"; // "Connect to destination depot";
         private static string INSUFFICIENT_PAYLOAD_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_PAYLOAD_MESSAGE"; // "This vessel is too small to establish a transport route.";
         private static string INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE"; // "Origin depot needs an additional ({0}) TransportCredits to support this route."; 
         private static string INVALID_CONNECTION_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INVALID_CONNECTION_MESSAGE"; // "Destination must be in a different biome.";
@@ -19,11 +18,6 @@ namespace WOLF
 
         private static readonly int MINIMUM_PAYLOAD = 1;
         private static readonly double ROUTE_COST_MULTIPLIER = 1d;
-
-        private double _nextBiomeUpdate = 0d;
-
-        [KSPField(guiActive = true, guiActiveEditor = false, guiName = "Current biome")]
-        public string CurrentBiome = string.Empty;
 
         [KSPField(guiActive = true, guiActiveEditor = false, guiName = "Route cost")]
         public int RouteCost = 0;
@@ -225,7 +219,7 @@ namespace WOLF
             MonoUtilities.RefreshContextWindows(part);
         }
 
-        void Update()
+        protected override void Update()
         {
             // Display current biome and route cost in PAW
             if (HighLogic.LoadedSceneIsFlight)

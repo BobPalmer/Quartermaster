@@ -213,7 +213,7 @@ namespace WOLF
             return ingredientList;
         }
 
-        void Update()
+        protected virtual void Update()
         {
             // Display current biome in PAW
             if (HighLogic.LoadedSceneIsFlight)
