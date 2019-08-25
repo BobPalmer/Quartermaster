@@ -103,6 +103,7 @@ namespace WOLF
             switch (vessel.situation)
             {                
                 case Situations.LANDED:
+                case Situations.SPLASHED:
                 case Situations.PRELAUNCH:
                     if (string.IsNullOrEmpty(vessel.landedAt))
                         return ScienceUtil.GetExperimentBiome(vessel.mainBody, vessel.latitude, vessel.longitude);

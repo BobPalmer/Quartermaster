@@ -25,7 +25,7 @@ namespace WOLF
 
             if(vessel.Splashed )
             {
-                return CalculateAbundance(new HarvestTypes[] { HarvestTypes.Oceanic , HarvestTypes.Atmospheric});
+                return CalculateAbundance(new HarvestTypes[] { HarvestTypes.Oceanic , HarvestTypes.Planetary, HarvestTypes.Atmospheric});
             }
             else
             {
