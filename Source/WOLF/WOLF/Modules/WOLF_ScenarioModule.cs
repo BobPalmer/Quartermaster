@@ -10,8 +10,7 @@ namespace WOLF
         public static List<string> AuxillaryResources { get; private set; } = new List<string>
         {
             "LifeSupport",
-            "Habitation",
-            "Cafeteria"
+            "Habitation"
         };
 
         public override void OnAwake()

@@ -18,9 +18,6 @@ namespace WOLF
         private IRecipe _wolfRecipe;
 
         [KSPField]
-        public string DisplayName = "WOLF Hopper";
-
-        [KSPField]
         public string InputResources = string.Empty;
 
         [KSPField(isPersistant = true)]
@@ -43,7 +40,7 @@ namespace WOLF
             }
 
             var body = vessel.mainBody.name;
-            var biome = GetVesselBiome();
+            var biome = WOLF_AbstractPartModule.GetVesselBiome(vessel);
 
             if (biome == string.Empty)
             {
@@ -89,33 +86,12 @@ namespace WOLF
             Messenger.DisplayMessage(string.Format(Messenger.SUCCESSFUL_DEPLOYMENT_MESSAGE, body));
         }
 
-        protected string GetVesselBiome()
-        {
-            switch (vessel.situation)
-            {
-                case Vessel.Situations.LANDED:
-                case Vessel.Situations.PRELAUNCH:
-                    return vessel.landedAt;
-                case Vessel.Situations.ORBITING:
-                    return "Orbit";
-                default:
-                    return string.Empty;
-            }
-        }
-
         public override void StartResourceConverter()
         {
             if (!IsConnectedToDepot)
                 Messenger.DisplayMessage(NOT_CONNECTED_MESSAGE);
             else
                 base.StartResourceConverter();
-        }
-
-        public override void OnAwake()
-        {
-            base.OnAwake();
-
-            IsStandaloneConverter = true;
         }
 
         public override void OnStart(StartState state)
@@ -151,7 +127,7 @@ namespace WOLF
             if (IsConnectedToDepot)
             {
                 var body = vessel.mainBody.name;
-                var biome = GetVesselBiome();
+                var biome = WOLF_AbstractPartModule.GetVesselBiome(vessel);
                 var depot = _depotRegistry.GetDepot(body, biome);
 
                 if (depot == null)
@@ -165,23 +141,34 @@ namespace WOLF
                     Messenger.DisplayMessage(LOST_CONNECTION_MESSAGE);
                     IsConnectedToDepot = false;
                     StopResourceConverter();
-
-                    var resourcesToRelease = new Dictionary<string, int>();
-                    foreach (var input in _wolfRecipe.InputIngredients)
-                    {
-                        resourcesToRelease.Add(input.Key, input.Value * -1);
-                    }
-
-                    var result = depot.NegotiateConsumer(resourcesToRelease);
-                    if (result is FailedNegotiationResult)
-                    {
-                        Debug.LogError("[WOLF] Could not release hopper resources back to depot.");
-                    }
+                    ReleaseResources();
                 }
+            }
+
+            // Hook into vessel destroyed event to release resources back to depot
+            if (vessel != null)
+            {
+                vessel.OnJustAboutToBeDestroyed += OnVesselDestroyed;
+                GameEvents.OnVesselRecoveryRequested.Add(OnVesselRecovered);
             }
         }
 
-        protected void ParseWolfRecipe()
+        public void OnVesselDestroyed()
+        {
+            ReleaseResources();
+            vessel.OnJustAboutToBeDestroyed -= OnVesselDestroyed;
+            GameEvents.OnVesselRecoveryRequested.Remove(OnVesselRecovered);
+        }
+
+        void OnVesselRecovered(Vessel vessel)
+        {
+            if (vessel == this.vessel)
+            {
+                OnVesselDestroyed();
+            }
+        }
+
+        public void ParseWolfRecipe()
         {
             var inputIngredients = WOLF_AbstractPartModule.ParseRecipeIngredientList(InputResources);
             if (inputIngredients == null)
@@ -190,6 +177,27 @@ namespace WOLF
             }
 
             _wolfRecipe = new Recipe(inputIngredients, new Dictionary<string, int>());
+        }
+
+        protected void ReleaseResources()
+        {
+            var body = vessel.mainBody.name;
+            var biome = WOLF_AbstractPartModule.GetVesselBiome(vessel);
+            var depot = _depotRegistry.GetDepot(body, biome);
+            if (depot != null && IsConnectedToDepot)
+            {
+                var resourcesToRelease = new Dictionary<string, int>();
+                foreach (var input in _wolfRecipe.InputIngredients)
+                {
+                    resourcesToRelease.Add(input.Key, input.Value * -1);
+                }
+
+                var result = depot.NegotiateConsumer(resourcesToRelease);
+                if (result is FailedNegotiationResult)
+                {
+                    Debug.LogError("[WOLF] Could not release hopper resources back to depot.");
+                }
+            }
         }
     }
 }
