@@ -12,6 +12,7 @@ namespace WOLF
             { "Food", 10 },
             { "MaterialKits", 10 },
             { "Oxygen", 10 },
+            { "Power", 10 },
             { "Water", 10 }
         };
         public static readonly string DEPOTS_NODE_NAME = "DEPOTS";
