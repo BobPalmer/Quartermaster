@@ -171,6 +171,10 @@ namespace WOLF
                 }
 
                 stream.Incoming += resource.Value;
+
+                // This should never happen since we don't allow removing providers from WOLF but just to be safe...
+                if (stream.Incoming < 0)
+                    stream.Incoming = 0;
             }
 
             return new OkNegotiationResult();
@@ -205,6 +209,8 @@ namespace WOLF
             {
                 var stream = _resourceStreams[resource.Key];
                 stream.Outgoing += resource.Value;
+                if (stream.Outgoing < 0)
+                    stream.Outgoing = 0;
             }
 
             return new OkNegotiationResult();

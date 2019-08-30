@@ -14,7 +14,7 @@ namespace WOLF
         private static readonly List<string> _allowedResources = new List<string>
         {
             "Dirt", "ExoticMinerals", "Gypsum", "Hydrates", "MetallicOre", "Minerals",
-            "Ore", "RareMetals", "Silicates", "Substrate", "Water"
+            "Ore", "Oxygen", "RareMetals", "Silicates", "Substrate", "Water"
         };
 
         public static Dictionary<string, int> GetResourceAbundance(int bodyIndex, double altitude, double latitude, double longitude, HarvestTypes[] harvestTypes)

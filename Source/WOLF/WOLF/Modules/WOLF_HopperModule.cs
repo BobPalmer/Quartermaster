@@ -10,9 +10,11 @@ namespace WOLF
     public class WOLF_HopperModule : USI_Converter
     {
         private static string CONNECT_TO_DEPOT_GUI_NAME = "#autoLOC_USI_WOLF_CONNECT_TO_DEPOT_GUI_NAME"; // "Connect to depot.";
+        private static string DISCONNECT_FROM_DEPOT_GUI_NAME = "#autoLOC_USI_WOLF_DISCONNECT_FROM_DEPOT_GUI_NAME"; // "Disconnect from depot.";
         private static string ALREADY_CONNECTED_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_ALREADY_CONNECTED_MESSAGE"; // "This hopper is already connected to a depot!";
         private static string LOST_CONNECTION_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_LOST_CONNECTION_MESSAGE"; // "This hopper has lost its connection to the depot!";
         private static string NOT_CONNECTED_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_NOT_CONNECTED_MESSAGE"; // "You must connect this hopper to a depot first!";
+        private static string DISCONNECTED_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_DISCONNECTED_MESSAGE"; // "Hopper has been disconnected from the depot.";
 
         private IDepotRegistry _depotRegistry;
         private IRecipe _wolfRecipe;
@@ -82,8 +84,30 @@ namespace WOLF
             DepotBody = body;
             DepotBiome = biome;
             IsConnectedToDepot = true;
+            Events["ConnectToDepotEvent"].guiActive = false;
+            Events["DisconnectFromDepotEvent"].guiActive = true;
+            // Hook into vessel destroyed event to release resources back to depot
+            if (vessel != null)
+            {
+                vessel.OnJustAboutToBeDestroyed += OnVesselDestroyed;
+                GameEvents.OnVesselRecoveryRequested.Add(OnVesselRecovered);
+            }
 
             Messenger.DisplayMessage(string.Format(Messenger.SUCCESSFUL_DEPLOYMENT_MESSAGE, body));
+        }
+
+        [KSPEvent(guiName = "changeme", active = true, guiActive = false, guiActiveEditor = false)]
+        public void DisconnectFromDepotEvent()
+        {
+            if (IsConnectedToDepot)
+            {
+                StopResourceConverter();
+                OnVesselDestroyed();
+                IsConnectedToDepot = false;
+                Events["DisconnectFromDepotEvent"].guiActive = false;
+                Events["ConnectToDepotEvent"].guiActive = true;
+                Messenger.DisplayMessage(DISCONNECTED_MESSAGE);
+            }
         }
 
         public override void StartResourceConverter()
@@ -102,6 +126,10 @@ namespace WOLF
             {
                 ALREADY_CONNECTED_MESSAGE = alreadyConnectedMessage;
             }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_HOPPER_DISCONNECTED_MESSAGE", out string disconnectedMessage))
+            {
+                DISCONNECTED_MESSAGE = disconnectedMessage;
+            }
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_HOPPER_LOST_CONNECTION_MESSAGE", out string lostConnectionMessage))
             {
                 LOST_CONNECTION_MESSAGE = lostConnectionMessage;
@@ -115,7 +143,13 @@ namespace WOLF
             {
                 CONNECT_TO_DEPOT_GUI_NAME = connectGuiName;
             }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_DISCONNECT_FROM_DEPOT_GUI_NAME", out string disconnectGuiName))
+            {
+                DISCONNECT_FROM_DEPOT_GUI_NAME = disconnectGuiName;
+            }
+
             Events["ConnectToDepotEvent"].guiName = CONNECT_TO_DEPOT_GUI_NAME;
+            Events["DisconnectFromDepotEvent"].guiName = DISCONNECT_FROM_DEPOT_GUI_NAME;
 
             // Find the WOLF scenario and parse the hopper recipe
             var scenario = FindObjectOfType<WOLF_ScenarioModule>();
@@ -143,14 +177,19 @@ namespace WOLF
                     StopResourceConverter();
                     ReleaseResources();
                 }
+                else
+                {
+                    // Hook into vessel destroyed event to release resources back to depot
+                    if (vessel != null)
+                    {
+                        vessel.OnJustAboutToBeDestroyed += OnVesselDestroyed;
+                        GameEvents.OnVesselRecoveryRequested.Add(OnVesselRecovered);
+                    }
+                }
             }
 
-            // Hook into vessel destroyed event to release resources back to depot
-            if (vessel != null)
-            {
-                vessel.OnJustAboutToBeDestroyed += OnVesselDestroyed;
-                GameEvents.OnVesselRecoveryRequested.Add(OnVesselRecovered);
-            }
+            Events["ConnectToDepotEvent"].guiActive = !IsConnectedToDepot;
+            Events["DisconnectFromDepotEvent"].guiActive = IsConnectedToDepot;
         }
 
         public void OnVesselDestroyed()
