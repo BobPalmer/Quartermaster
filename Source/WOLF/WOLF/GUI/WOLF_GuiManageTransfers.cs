@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using KSP.Localization;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -7,10 +8,10 @@ namespace WOLF
     public class WOLF_GuiManageTransfers : Window
     {
         #region Local static and instance variables
-        private const string INSUFFICIENT_PAYLOAD_MESSAGE = "This transfer exceeds the available payload capacity.";
-        private const string INSUFFICIENT_ORIGIN_RESOURCES_MESSAGE = "This transfer exceeds the availability at the origin depot.";
-        private const string NO_ROUTES_MESSAGE = "There are currently no established routes.";
-        private const string ROUTE_NAME_TEMPLATE = " {0}:{1} => {2}:{3} ";
+        private static string INSUFFICIENT_PAYLOAD_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_UI_INSUFFICIENT_PAYLOAD_MESSAGE"; // "This transfer exceeds the available payload capacity.";
+        private static string INSUFFICIENT_ORIGIN_RESOURCES_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_UI_INSUFFICIENT_ORIGIN_RESOURCES_MESSAGE"; // "This transfer exceeds the availability at the origin depot.";
+        private static string NO_ROUTES_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_UI_NO_ROUTES_MESSAGE"; // "There are currently no established routes.";
+        private static readonly string ROUTE_NAME_TEMPLATE = " {0}:{1} => {2}:{3} ";
 
         private IRegistryCollection _registry;
         private string _transferAmountText = string.Empty;
@@ -39,6 +40,20 @@ namespace WOLF
         /// </summary>
         private void Start()
         {
+            // Get localized messages
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_UI_INSUFFICIENT_PAYLOAD_MESSAGE", out string insufficientPayload))
+            {
+                INSUFFICIENT_PAYLOAD_MESSAGE = insufficientPayload;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_UI_INSUFFICIENT_ORIGIN_RESOURCES_MESSAGE", out string insufficientOriginResources))
+            {
+                INSUFFICIENT_ORIGIN_RESOURCES_MESSAGE = insufficientOriginResources;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_UI_NO_ROUTES_MESSAGE", out string noRoutes))
+            {
+                NO_ROUTES_MESSAGE = noRoutes;
+            }
+
             // Build route list
             var routes = _registry.GetRoutes();
             if (routes == null || routes.Count < 1)

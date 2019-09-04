@@ -21,6 +21,7 @@ namespace WOLF
                 SURVEY_GUI_NAME = surveyGuiName;
             }
             Events["ConnectToDepotEvent"].guiName = SURVEY_GUI_NAME;
+            Actions["ConnectToDepotAction"].guiName = SURVEY_GUI_NAME;
         }
     }
 }

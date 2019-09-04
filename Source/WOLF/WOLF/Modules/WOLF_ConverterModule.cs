@@ -111,6 +111,7 @@ namespace WOLF
                 CONNECT_TO_DEPOT_GUI_NAME = connectGuiName;
             }
             Events["ConnectToDepotEvent"].guiName = CONNECT_TO_DEPOT_GUI_NAME;
+            Actions["ConnectToDepotAction"].guiName = CONNECT_TO_DEPOT_GUI_NAME;
         }
     }
 }

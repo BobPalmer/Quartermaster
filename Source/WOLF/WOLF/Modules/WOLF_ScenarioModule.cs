@@ -6,12 +6,35 @@ namespace WOLF
     [KSPScenario(ScenarioCreationOptions.AddToAllGames, GameScenes.EDITOR, GameScenes.FLIGHT, GameScenes.SPACECENTER, GameScenes.TRACKSTATION)]
     public class WOLF_ScenarioModule : ScenarioModule
     {
-        public ServiceManager ServiceManager { get; private set; }
-        public static List<string> AuxillaryResources { get; private set; } = new List<string>
+        private Configuration _configuration;
+        public Configuration Configuration
         {
-            "LifeSupport",
-            "Habitation"
-        };
+            get
+            {
+                return _configuration ?? (_configuration = GetConfiguration());
+            }
+        }
+
+        public ServiceManager ServiceManager { get; private set; }
+
+        private Configuration GetConfiguration()
+        {
+            var configNodes = GameDatabase.Instance.GetConfigNodes("WOLF_CONFIGURATION");
+            var allowedResources = new List<string>();
+
+            foreach (var node in configNodes)
+            {
+                var configFromFile = ResourceUtilities.LoadNodeProperties<ConfigurationFromFile>(node);
+                var resources = Configuration.ParseHarvestableResources(configFromFile.AllowedHarvestableResources);
+
+                allowedResources.AddRange(resources);
+            }
+
+            var config = new Configuration();
+            config.SetHarvestableResources(allowedResources);
+
+            return config;
+        }
 
         public override void OnAwake()
         {

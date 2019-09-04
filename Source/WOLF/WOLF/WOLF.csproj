@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WOLF</RootNamespace>
-    <AssemblyName>WOLF</AssemblyName>
+    <AssemblyName>USI_WOLF</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -56,11 +56,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration.cs" />
     <Compile Include="DepotResourceViewModel.cs" />
     <Compile Include="GUI\Helpers\ComboBox.cs" />
     <Compile Include="GUI\Helpers\UIHelper.cs" />
     <Compile Include="GUI\Helpers\Utilities.cs" />
     <Compile Include="GUI\Helpers\Window.cs" />
+    <Compile Include="GUI\WOLF_GuiConfirmationDialog.cs" />
     <Compile Include="GUI\WOLF_GuiManageTransfers.cs" />
     <Compile Include="GUI\WOLF_PlanningMonitor.cs" />
     <Compile Include="GUI\WOLF_RouteMonitor.cs" />
