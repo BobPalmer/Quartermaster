@@ -1,0 +1,55 @@
+﻿using Xunit;
+
+namespace WOLF.Tests.Unit
+{
+    public class When_exploring_configuration
+    {
+        [Fact]
+        public void Has_default_harvestable_resources()
+        {
+            Assert.NotEmpty(Configuration.DefaultHarvestableResources);
+            Assert.NotEmpty(Configuration.DefaultHarvestableResources);
+        }
+
+        [Fact]
+        public void Can_parse_resource_list()
+        {
+            var configuration = new Configuration();
+
+            var resources = Configuration.ParseHarvestableResources(",Ore  , Oxygen,");
+
+            Assert.NotNull(resources);
+            Assert.NotEmpty(resources);
+            Assert.Equal(2, resources.Count);
+            Assert.Contains(resources, r => r == "Ore");
+            Assert.Contains(resources, r => r == "Oxygen");
+        }
+
+        [Fact]
+        public void Returns_default_resources_when_empty_string_given()
+        {
+            var configuration = new Configuration();
+
+            var resources = Configuration.ParseHarvestableResources("");
+
+            Assert.NotNull(resources);
+            Assert.NotEmpty(resources);
+            Assert.Equal(Configuration.DefaultHarvestableResources, resources);
+        }
+
+        [Fact]
+        public void Can_set_harvestable_resources()
+        {
+            var configuration = new Configuration();
+
+            configuration.SetHarvestableResources("Ore,Oxygen");
+            var resources = configuration.AllowedHarvestableResources;
+
+            Assert.NotNull(resources);
+            Assert.NotEmpty(resources);
+            Assert.Equal(2, resources.Count);
+            Assert.Contains(resources, r => r == "Ore");
+            Assert.Contains(resources, r => r == "Oxygen");
+        }
+    }
+}

@@ -12,6 +12,7 @@ namespace WOLF
     {
         protected double _nextBiomeUpdate = 0d;
         protected IRegistryCollection _registry;
+        protected WOLF_ScenarioModule _scenario;
 
         protected static string CURRENT_BIOME_GUI_NAME = "#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME"; // "Current biome";
         protected static readonly List<string> KSC_BIOMES = new List<string>
@@ -41,6 +42,12 @@ namespace WOLF
         public void ConnectToDepotEvent()
         {
             ConnectToDepot();
+        }
+
+        [KSPAction("Connect to depot")]
+        public void ConnectToDepotAction(KSPActionParam param)
+        {
+            ConnectToDepotEvent();
         }
 
         protected abstract void ConnectToDepot();
@@ -100,6 +107,8 @@ namespace WOLF
         public static string GetVesselBiome(Vessel vessel)
         {
             vessel.checkLanded();
+            vessel.checkSplashed();
+
             switch (vessel.situation)
             {                
                 case Situations.LANDED:
@@ -160,8 +169,8 @@ namespace WOLF
             }
             Fields["CurrentBiome"].guiName = CURRENT_BIOME_GUI_NAME;
 
-            var scenario = FindObjectOfType<WOLF_ScenarioModule>();
-            _registry = scenario.ServiceManager.GetService<IRegistryCollection>();
+            _scenario = FindObjectOfType<WOLF_ScenarioModule>();
+            _registry = _scenario.ServiceManager.GetService<IRegistryCollection>();
 
             ParseRecipe();
         }

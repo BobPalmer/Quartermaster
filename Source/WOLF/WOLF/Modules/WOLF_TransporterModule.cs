@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace WOLF
 {
@@ -15,9 +16,11 @@ namespace WOLF
         private static string INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE"; // "Origin depot needs an additional ({0}) TransportCredits to support this route."; 
         private static string INVALID_CONNECTION_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INVALID_CONNECTION_MESSAGE"; // "Destination must be in a different biome.";
         private static string ROUTE_COST_GUI_NAME = "#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_COST_GUI_NAME";  // "Route cost";
+        private static string ROUTE_IN_PROGRESS_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_IN_PROGRESS_MESSAGE"; // "You must complete or cancel the current route before starting a new route!";
 
         private static readonly int MINIMUM_PAYLOAD = 1;
         private static readonly double ROUTE_COST_MULTIPLIER = 1d;
+        private readonly WOLF_GuiConfirmationDialog _confirmationDialog;
 
         [KSPField(guiActive = true, guiActiveEditor = false, guiName = "Route cost")]
         public int RouteCost = 0;
@@ -34,20 +37,37 @@ namespace WOLF
         [KSPField(isPersistant = true)]
         public string OriginBiome;
 
-        [KSPEvent(guiActive = true, guiActiveEditor = false)]
-        public void ResetRoute()
+        public WOLF_TransporterModule() : base()
         {
-            OriginBody = string.Empty;
-            OriginBiome = string.Empty;
-            StartingVesselMass = 0d;
-            IsConnectedToOrigin = false;
-
-            ToggleEventButtons();
+            _confirmationDialog = new WOLF_GuiConfirmationDialog(this);
         }
 
         [KSPEvent(guiActive = true, guiActiveEditor = false)]
-        public void ConnectToOrigin()
+        public void CancelRouteEvent()
         {
+            _confirmationDialog.SetVisible(true);
+        }
+
+        [KSPAction("Cancel route")]
+        public void CancelRouteAction(KSPActionParam param)
+        {
+            CancelRouteEvent();
+        }
+
+        public void ConfirmCancelRoute()
+        {
+            ResetRoute();
+        }
+
+        [KSPEvent(guiActive = true, guiActiveEditor = false)]
+        public void ConnectToOriginEvent()
+        {
+            if (IsConnectedToOrigin)
+            {
+                DisplayMessage(ROUTE_IN_PROGRESS_MESSAGE);
+                return;
+            }
+
             // Check for issues that would prevent deployment
             var deployCheckResult = CanConnectToDepot();
             if (!string.IsNullOrEmpty(deployCheckResult))
@@ -69,6 +89,12 @@ namespace WOLF
             IsConnectedToOrigin = true;
 
             ToggleEventButtons();
+        }
+
+        [KSPAction("Connect to origin depot")]
+        public void ConnectToOriginAction(KSPActionParam param)
+        {
+            ConnectToOriginEvent();
         }
 
         // We'll piggyback on the base class ConnectToDepotEvent to
@@ -160,10 +186,22 @@ namespace WOLF
             return PartInfo;
         }
 
+        void OnGUI()
+        {
+            if (_confirmationDialog.IsVisible())
+            {
+                _confirmationDialog.DrawWindow();
+            }
+        }
+
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
 
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRASNPORTER_UI_CONFIRMATION_DIALOG_WINDOW_TITLE", out string confirmationDialogTitle))
+            {
+                _confirmationDialog.WindowTitle = confirmationDialogTitle;
+            }
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_PAYLOAD_MESSAGE", out string payloadMessage))
             {
                 INSUFFICIENT_PAYLOAD_MESSAGE = payloadMessage;
@@ -175,6 +213,10 @@ namespace WOLF
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_INVALID_CONNECTION_MESSAGE", out string invalidConnectionMessage))
             {
                 INVALID_CONNECTION_MESSAGE = invalidConnectionMessage;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_IN_PROGRESS_MESSAGE", out string routeInProgressMessage))
+            {
+                ROUTE_IN_PROGRESS_MESSAGE = routeInProgressMessage;
             }
 
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME", out string currentBiomeGuiName))
@@ -193,28 +235,41 @@ namespace WOLF
             {
                 CANCEL_ROUTE_GUI_NAME = cancelRouteGuiName;
             }
-            Events["ResetRoute"].guiName = CANCEL_ROUTE_GUI_NAME;
+            Events["CancelRouteEvent"].guiName = CANCEL_ROUTE_GUI_NAME;
+            Actions["CancelRouteAction"].guiName = CANCEL_ROUTE_GUI_NAME;
 
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_CONNECT_TO_ORIGIN_GUI_NAME", out string originGuiName))
             {
                 CONNECT_TO_ORIGIN_GUI_NAME = originGuiName;
             }
-            Events["ConnectToOrigin"].guiName = CONNECT_TO_ORIGIN_GUI_NAME;
+            Events["ConnectToOriginEvent"].guiName = CONNECT_TO_ORIGIN_GUI_NAME;
+            Actions["ConnectToOriginAction"].guiName = CONNECT_TO_ORIGIN_GUI_NAME;
 
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_CONNECT_TO_DESTINATION_GUI_NAME", out string destinationGuiName))
             {
                 CONNECT_TO_DESTINATION_GUI_NAME = destinationGuiName;
             }
             Events["ConnectToDepotEvent"].guiName = CONNECT_TO_DESTINATION_GUI_NAME;
+            Actions["ConnectToDepotAction"].guiName = CONNECT_TO_DESTINATION_GUI_NAME;
+
+            ToggleEventButtons();
+        }
+
+        private void ResetRoute()
+        {
+            OriginBody = string.Empty;
+            OriginBiome = string.Empty;
+            StartingVesselMass = 0d;
+            IsConnectedToOrigin = false;
 
             ToggleEventButtons();
         }
 
         private void ToggleEventButtons()
         {
-            Events["ResetRoute"].active = IsConnectedToOrigin;
+            Events["CancelRouteEvent"].active = IsConnectedToOrigin;
             Events["ConnectToDepotEvent"].active = IsConnectedToOrigin;
-            Events["ConnectToOrigin"].active = !IsConnectedToOrigin;
+            Events["ConnectToOriginEvent"].active = !IsConnectedToOrigin;
 
             MonoUtilities.RefreshContextWindows(part);
         }

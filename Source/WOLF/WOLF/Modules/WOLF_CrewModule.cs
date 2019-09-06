@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace WOLF
 {
@@ -51,6 +50,10 @@ namespace WOLF
 
                 var resourceName = kerbal.trait + CREW_RESOURCE_SUFFIX;
                 var stars = kerbal.experienceLevel * CREW_RESOURCE_MULTIPLIER;
+                if (stars < 1)
+                {
+                    stars = 1;
+                }
                 if (!outputs.ContainsKey(resourceName))
                 {
                     outputs.Add(resourceName, stars);
@@ -65,7 +68,7 @@ namespace WOLF
         }
 
         /// <summary>
-        /// Only crew with at least 1 experience point are eligible to work at a WOLF colony!
+        /// Determine if crew members are eligible for WOLF
         /// </summary>
         /// <returns></returns>
         public bool IsCrewEligible()
@@ -74,7 +77,8 @@ namespace WOLF
             if (roster.Count < 1)
                 return true;
 
-            return !roster.Any(c => c.experienceLevel < 1);
+            //return !roster.Any(c => c.experienceLevel < 1);
+            return true;
         }
     }
 }

@@ -11,10 +11,8 @@ namespace WOLF
         private readonly IRouteRegistry _routeRegistry;
         private readonly Dictionary<IRoute, bool> _routeDisplayStatus
             = new Dictionary<IRoute, bool>();
-        private GUIStyle _windowStyle;
         private GUIStyle _labelStyle;
         private GUIStyle _scrollStyle;
-        private GUIStyle _smButtonStyle;
 
         public WOLF_GuiManageTransfers ManageTransfersGui { get; private set; }
 
@@ -136,17 +134,8 @@ namespace WOLF
 
         private void InitStyles()
         {
-            _windowStyle = new GUIStyle(HighLogic.Skin.window)
-            {
-                fixedWidth = 700,
-                fixedHeight = 460f
-            };
             _labelStyle = new GUIStyle(HighLogic.Skin.label);
             _scrollStyle = new GUIStyle(HighLogic.Skin.scrollView);
-            _smButtonStyle = new GUIStyle(HighLogic.Skin.button)
-            {
-                fontSize = 10
-            };
         }
 
         private void ToggleTransfersWindow()

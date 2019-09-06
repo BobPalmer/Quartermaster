@@ -1,6 +1,7 @@
 ﻿using KSP.Localization;
 using System.Collections.Generic;
 using System.Linq;
+using static Vessel;
 
 namespace WOLF
 {
@@ -15,22 +16,38 @@ namespace WOLF
         private static string SUCCESSFUL_SURVEY_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_SUCCESSFUL_SURVEY_MESSAGE"; // "Survey completed at {0} on {1}!";
         private static string SURVEY_ALREADY_COMPLETED_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_SURVEY_ALREADY_COMPLETE_MESSAGE"; // "A survey has already been completed in this biome!";
 
+        private static readonly HarvestTypes[] DEFAULT_HARVEST_TYPES = new HarvestTypes[] { HarvestTypes.Atmospheric, HarvestTypes.Planetary };
+        private static readonly HarvestTypes[] OCEANIC_HARVEST_TYPES = new HarvestTypes[] { HarvestTypes.Atmospheric, HarvestTypes.Oceanic, HarvestTypes.Planetary };
+        private static readonly HarvestTypes[] ORBITAL_HARVEST_TYPES = new HarvestTypes[] { HarvestTypes.Exospheric };
+        private static readonly Dictionary<string, int> HOME_PLANET_STARTING_RESOURCES = new Dictionary<string, int>
+        {
+            { "Food", 1 },
+            { "MaterialKits", 5 },
+            { "Oxygen", 1 },
+            { "Power", 10 },
+            { "Water", 5 }
+        };
+        private static readonly Dictionary<string, int> DEFAULT_STARTING_RESOURCES = new Dictionary<string, int>
+        {
+            { "Power", 5 }
+        };
+
         public const string HARVESTABLE_RESOURCE_SUFFIX = "Vein";
 
         protected Dictionary<string, int> CalculateAbundance()
         {
-            // TODO - Pull resource abundance based on situation and if the planet has an atmos
             vessel.checkLanded();
             vessel.checkSplashed();
 
-            if(vessel.Splashed )
-            {
-                return CalculateAbundance(new HarvestTypes[] { HarvestTypes.Oceanic , HarvestTypes.Planetary, HarvestTypes.Atmospheric});
-            }
+            HarvestTypes[] harvestTypes;
+            if (vessel.Splashed)
+                harvestTypes = OCEANIC_HARVEST_TYPES;
+            else if (vessel.situation == Situations.ORBITING)
+                harvestTypes = ORBITAL_HARVEST_TYPES;
             else
-            {
-                return CalculateAbundance(new HarvestTypes[] { HarvestTypes.Planetary , HarvestTypes.Atmospheric });
-            }
+                harvestTypes = DEFAULT_HARVEST_TYPES;
+
+            return CalculateAbundance(harvestTypes);
         }
 
         protected Dictionary<string,int> CalculateAbundance(HarvestTypes[] harvestTypes)
@@ -40,7 +57,8 @@ namespace WOLF
                 altitude: vessel.altitude,
                 latitude: vessel.latitude,
                 longitude: vessel.longitude,
-                harvestTypes: harvestTypes);
+                harvestTypes: harvestTypes,
+                config: _scenario.Configuration);
         }
 
         protected override void ConnectToDepot()
@@ -110,15 +128,6 @@ namespace WOLF
 
                 // Calculate resource abundance and cache resource vein names in scenario module
                 var harvestableResources = CalculateAbundance();
-                var knownResources = WOLF_ScenarioModule.AuxillaryResources;
-                foreach (var resource in harvestableResources)
-                {
-                    if (!knownResources.Contains(resource.Key))
-                    {
-                        knownResources.Add(resource.Key);
-                    }
-                }
-
                 depot.NegotiateProvider(harvestableResources);
 
                 DisplayMessage(string.Format(SUCCESSFUL_SURVEY_MESSAGE, biome, body));
@@ -128,7 +137,15 @@ namespace WOLF
                 // Establish depot
                 depot.Establish();
 
-                // Setup starting resource streams, if any
+                // Setup bootstrap resource streams
+                if (vessel.mainBody.isHomeWorld && vessel.situation != Situations.ORBITING)
+                {
+                    depot.NegotiateProvider(HOME_PLANET_STARTING_RESOURCES);
+                }
+                else
+                {
+                    depot.NegotiateProvider(DEFAULT_STARTING_RESOURCES);
+                }
                 depot.NegotiateProvider(Recipe.OutputIngredients);
                 depot.NegotiateConsumer(Recipe.InputIngredients);
 
@@ -176,6 +193,7 @@ namespace WOLF
                 ESTABLISH_DEPOT_GUI_NAME = establishGuiName;
             }
             Events["ConnectToDepotEvent"].guiName = ESTABLISH_DEPOT_GUI_NAME;
+            Actions["ConnectToDepotAction"].guiName = ESTABLISH_DEPOT_GUI_NAME;
         }
     }
 }
