@@ -68,7 +68,10 @@
     <Compile Include="GUI\WOLF_RouteMonitor.cs" />
     <Compile Include="GUI\WOLF_ScenarioMonitor.cs" />
     <Compile Include="Helpers\WOLF_Exceptions.cs" />
+    <Compile Include="HopperMetadata.cs" />
     <Compile Include="Interfaces\IDepotRegistry.cs" />
+    <Compile Include="Interfaces\IHopperRegistry.cs" />
+    <Compile Include="Interfaces\IRecipeProvider.cs" />
     <Compile Include="Interfaces\IRoute.cs" />
     <Compile Include="Interfaces\IRouteRegistry.cs" />
     <Compile Include="Interfaces\IRegistryCollection.cs" />

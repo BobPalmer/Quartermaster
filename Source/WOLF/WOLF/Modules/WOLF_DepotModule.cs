@@ -146,8 +146,8 @@ namespace WOLF
                 {
                     depot.NegotiateProvider(DEFAULT_STARTING_RESOURCES);
                 }
-                depot.NegotiateProvider(Recipe.OutputIngredients);
-                depot.NegotiateConsumer(Recipe.InputIngredients);
+                depot.NegotiateProvider(WolfRecipe.OutputIngredients);
+                depot.NegotiateConsumer(WolfRecipe.InputIngredients);
 
                 DisplayMessage(string.Format(SUCCESSFUL_DEPLOYMENT_MESSAGE, biome, body));
                 Poof.GoPoof(vessel);

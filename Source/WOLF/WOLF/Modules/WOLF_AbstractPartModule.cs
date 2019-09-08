@@ -8,7 +8,7 @@ using Situations = Vessel.Situations;
 namespace WOLF
 {
     [KSPModule("Converter")]
-    public abstract class WOLF_AbstractPartModule : PartModule
+    public abstract class WOLF_AbstractPartModule : PartModule, IRecipeProvider
     {
         protected double _nextBiomeUpdate = 0d;
         protected IRegistryCollection _registry;
@@ -24,7 +24,7 @@ namespace WOLF
         protected static string NEEDS_TEXT = "#autoLOC_USI_WOLF_NEEDS";  // "Needs"
         protected static string PROVIDES_TEXT = "#autoLOC_USI_WOLF_PROVIDES";  // "Provides"
 
-        public IRecipe Recipe { get; private set; }
+        public IRecipe WolfRecipe { get; private set; }
 
         [KSPField(guiActive = true, guiActiveEditor = false, guiName = "Current biome test", isPersistant = false)]
         public string CurrentBiome = "???";
@@ -69,14 +69,14 @@ namespace WOLF
                 .AppendLine(PartInfo)
                 .AppendLine();
 
-            if (Recipe == null)
+            if (WolfRecipe == null)
                 ParseRecipe();
 
-            if (Recipe.InputIngredients.Count > 0)
+            if (WolfRecipe.InputIngredients.Count > 0)
             {
                 info.AppendFormat("<color=#99FF00>{0}:</color>", NEEDS_TEXT);
                 info.AppendLine();
-                foreach (var resource in Recipe.InputIngredients)
+                foreach (var resource in WolfRecipe.InputIngredients)
                 {
                     info
                         .Append(" - ")
@@ -86,11 +86,11 @@ namespace WOLF
                         .AppendLine();
                 }
             }
-            if (Recipe.OutputIngredients.Count > 0)
+            if (WolfRecipe.OutputIngredients.Count > 0)
             {
                 info.AppendFormat("<color=#99FF00>{0}:</color>", PROVIDES_TEXT);
                 info.AppendLine();
-                foreach (var resource in Recipe.OutputIngredients)
+                foreach (var resource in WolfRecipe.OutputIngredients)
                 {
                     info
                         .Append(" - ")
@@ -191,7 +191,7 @@ namespace WOLF
                 return;
             }
 
-            Recipe = new Recipe(inputIngredients, outputIngredients);
+            WolfRecipe = new Recipe(inputIngredients, outputIngredients);
         }
 
         public static Dictionary<string, int> ParseRecipeIngredientList(string ingredients)

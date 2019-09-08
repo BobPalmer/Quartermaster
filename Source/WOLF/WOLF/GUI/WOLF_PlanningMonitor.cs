@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KSP.Localization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,14 +8,17 @@ namespace WOLF
 {
     public class WOLF_PlanningMonitor
     {
-        private const string NO_DEPOTS_MESSAGE = "There are currently no established depots.";
-        
+        private static string NO_DEPOTS_MESSAGE = "#autoLOC_USI_WOLF_NO_DEPOTS_ESTABLISHED_MESSAGE";  // "There are currently no established depots.";
+        private static string INVALID_PART_ATTACHMENT_MESSAGE = "#autoLOC_USI_WOLF_INVALID_HOPPER_PART_ATTACHMENT_MESSAGE";  // "Hoppers must be detached from other WOLF parts before deployment.";
+
         private ComboBox _depotDropdown;
         private readonly IDepotRegistry _depotRegistry;
         private List<IDepot> _depots;
         private GUIContent[] _depotNames;
         private List<IResourceStream> _depotResources;
         private int _selectedDepotIndex = 0;
+        private bool _hasHoppers = false;
+        private bool _hasNonHoppers = false;
 
         public WOLF_PlanningMonitor(IRegistryCollection depotRegistry)
         {
@@ -22,6 +26,15 @@ namespace WOLF
 
             CreateCache();
             CreateDropdown();
+
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_NO_DEPOTS_ESTABLISHED_MESSAGE", out string noDepotsMessage))
+            {
+                NO_DEPOTS_MESSAGE = noDepotsMessage;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_INVALID_HOPPER_PART_ATTACHMENT_MESSAGE", out string invalidPartAttachMessage))
+            {
+                INVALID_PART_ATTACHMENT_MESSAGE = invalidPartAttachMessage;
+            }
         }
 
         private void CreateCache()
@@ -155,6 +168,10 @@ namespace WOLF
                     }
                     else
                     {
+                        if (_hasHoppers && _hasNonHoppers)
+                        {
+                            GUILayout.Label("! " + INVALID_PART_ATTACHMENT_MESSAGE, UIHelper.redLabelStyle);
+                        }
                         for (int i = 0; i < affectedNonHarvestables.Length; i++)
                         {
                             GUILayout.BeginHorizontal();
@@ -276,10 +293,15 @@ namespace WOLF
         /// <returns></returns>
         private IRecipe GetVesselRecipe(ShipConstruct ship)
         {
-            var recipes = ship.parts
-                .SelectMany(p => p.FindModulesImplementing<WOLF_AbstractPartModule>())
-                .Where(p => !(p is WOLF_SurveyModule))
-                .Select(p => p.Recipe)
+            var parts = ship.parts
+                .SelectMany(p => p.FindModulesImplementing<IRecipeProvider>())
+                .Where(p => !(p is WOLF_SurveyModule));
+
+            _hasHoppers = parts.Any(p => p is WOLF_HarvesterModule);
+            _hasNonHoppers = parts.Any(p => !(p is WOLF_HarvesterModule));
+
+            var recipes = parts
+                .Select(p => p.WolfRecipe)
                 .ToList();
 
             var crewDialog = KSP.UI.CrewAssignmentDialog.Instance;

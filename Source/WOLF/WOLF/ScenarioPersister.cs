@@ -6,9 +6,11 @@ namespace WOLF
     public class ScenarioPersister : IRegistryCollection
     {
         public static readonly string DEPOTS_NODE_NAME = "DEPOTS";
+        public static readonly string HOPPERS_NODE_NAME = "HOPPERS";
         public static readonly string ROUTES_NODE_NAME = "ROUTES";
 
         protected List<IDepot> _depots { get; private set; } = new List<IDepot>();
+        protected List<HopperMetadata> _hoppers { get; private set; } = new List<HopperMetadata>();
         protected List<IRoute> _routes { get; private set; } = new List<IRoute>();
 
         public List<string> TransferResourceBlacklist { get; private set; } = new List<string>
@@ -32,6 +34,20 @@ namespace WOLF
             _depots.Add(depot);
 
             return depot;
+        }
+
+        /// <summary>
+        /// Registers a hopper with a depot.
+        /// </summary>
+        /// <param name="depot"></param>
+        /// <param name="recipe"></param>
+        /// <returns>The module id for the hopper.</returns>
+        public string CreateHopper(IDepot depot, IRecipe recipe)
+        {
+            var hopper = new HopperMetadata(depot, recipe);
+            _hoppers.Add(hopper);
+
+            return hopper.Id;
         }
 
         public IRoute CreateRoute(string originBody, string originBiome, string destinationBody, string destinationBiome, int payload)
@@ -76,6 +92,11 @@ namespace WOLF
         public List<IDepot> GetDepots()
         {
             return _depots.ToList() ?? new List<IDepot>();
+        }
+
+        public List<HopperMetadata> GetHoppers()
+        {
+            return _hoppers.ToList() ?? new List<HopperMetadata>();
         }
 
         public IRoute GetRoute(string originBody, string originBiome, string destinationBody, string destinationBiome)
@@ -123,6 +144,24 @@ namespace WOLF
                     _depots.Add(depot);
                 }
             }
+            if (node.HasNode(HOPPERS_NODE_NAME))
+            {
+                var wolfNode = node.GetNode(HOPPERS_NODE_NAME);
+                var hoppersNode = wolfNode.GetNodes();
+                foreach (var hopperNode in hoppersNode)
+                {
+                    var bodyValue = hopperNode.GetValue("Body");
+                    var biomeValue = hopperNode.GetValue("Biome");
+                    var depot = _depots.FirstOrDefault(d => d.Body == bodyValue && d.Biome == biomeValue);
+
+                    if (depot != null)
+                    {
+                        var hopper = new HopperMetadata(depot);
+                        hopper.OnLoad(hopperNode);
+                        _hoppers.Add(hopper);
+                    }
+                }
+            }
             if (node.HasNode(ROUTES_NODE_NAME))
             {
                 var wolfNode = node.GetNode(ROUTES_NODE_NAME);
@@ -131,7 +170,6 @@ namespace WOLF
                 {
                     var route = new Route(this);
                     route.OnLoad(routeNode);
-
                     _routes.Add(route);
                 }
             }
@@ -149,6 +187,16 @@ namespace WOLF
                 depotsNode = node.GetNode(DEPOTS_NODE_NAME);
             }
 
+            ConfigNode hoppersNode;
+            if (!node.HasNode(HOPPERS_NODE_NAME))
+            {
+                hoppersNode = node.AddNode(HOPPERS_NODE_NAME);
+            }
+            else
+            {
+                hoppersNode = node.GetNode(HOPPERS_NODE_NAME);
+            }
+
             ConfigNode routesNode;
             if (!node.HasNode(ROUTES_NODE_NAME))
             {
@@ -164,9 +212,24 @@ namespace WOLF
                 depot.OnSave(depotsNode);
             }
 
+            foreach (var hopper in _hoppers)
+            {
+                hopper.OnSave(hoppersNode);
+            }
+
             foreach (var route in _routes)
             {
                 route.OnSave(routesNode);
+            }
+        }
+
+        public void RemoveHopper(string id)
+        {
+            var hopper = _hoppers.FirstOrDefault(h => h.Id == id);
+
+            if (hopper != null)
+            {
+                _hoppers.Remove(hopper);
             }
         }
     }

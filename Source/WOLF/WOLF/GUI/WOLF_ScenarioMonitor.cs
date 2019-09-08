@@ -100,6 +100,66 @@ namespace WOLF
             // Setup child windows
             if (!_childWindows.Contains(_routeMonitor.ManageTransfersGui))
                 _childWindows.Add(_routeMonitor.ManageTransfersGui);
+
+            // Check for missing hoppers
+            var hoppers = _wolfRegistry.GetHoppers();
+            if (hoppers.Count > 0)
+            {
+                var hopperIds = GetHopperIds();
+                foreach (var hopper in hoppers)
+                {
+                    if (!hopperIds.Contains(hopper.Id))
+                    {
+                        var resourcesToRelease = new Dictionary<string, int>();
+                        foreach (var input in hopper.Recipe.InputIngredients)
+                        {
+                            resourcesToRelease.Add(input.Key, input.Value * -1);
+                        }
+
+                        var result = hopper.Depot.NegotiateConsumer(resourcesToRelease);
+                        if (result is FailedNegotiationResult)
+                        {
+                            Debug.LogError("[WOLF] Could not release hopper resources back to depot.");
+                        }
+
+                        _wolfRegistry.RemoveHopper(hopper.Id);
+                    }
+                }
+            }
+        }
+
+        private List<string> GetHopperIds()
+        {
+            var vessels = FlightGlobals.Vessels;
+            List<string> hopperIds = new List<string>();
+            foreach (var vessel in vessels)
+            {
+                if (vessel.loaded)
+                {
+                    var modules = vessel.FindPartModulesImplementing<WOLF_HopperModule>();
+                    var ids = modules.Select(m => m.HopperId);
+                    hopperIds.AddRange(ids);
+                }
+                else
+                {
+                    foreach (var part in vessel.protoVessel.protoPartSnapshots)
+                    {
+                        foreach (var module in part.modules)
+                        {
+                            if (module.moduleName == "WOLF_HopperModule")
+                            {
+                                var id = module.moduleValues.GetValue("HopperId") ?? string.Empty;
+                                if (!string.IsNullOrEmpty(id))
+                                {
+                                    hopperIds.Add(id);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return hopperIds;
         }
 
         private void InitStyles()
