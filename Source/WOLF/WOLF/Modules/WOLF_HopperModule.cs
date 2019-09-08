@@ -7,17 +7,26 @@ using USITools;
 namespace WOLF
 {
     [KSPModule("Hopper")]
-    public class WOLF_HopperModule : USI_Converter
+    public class WOLF_HopperModule : USI_Converter, IRecipeProvider
     {
         private static string CONNECT_TO_DEPOT_GUI_NAME = "#autoLOC_USI_WOLF_CONNECT_TO_DEPOT_GUI_NAME"; // "Connect to depot.";
+        private static string CURRENT_BIOME_GUI_NAME = "#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME"; // "Current biome";
         private static string DISCONNECT_FROM_DEPOT_GUI_NAME = "#autoLOC_USI_WOLF_DISCONNECT_FROM_DEPOT_GUI_NAME"; // "Disconnect from depot.";
         private static string ALREADY_CONNECTED_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_ALREADY_CONNECTED_MESSAGE"; // "This hopper is already connected to a depot!";
         private static string LOST_CONNECTION_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_LOST_CONNECTION_MESSAGE"; // "This hopper has lost its connection to the depot!";
         private static string NOT_CONNECTED_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_NOT_CONNECTED_MESSAGE"; // "You must connect this hopper to a depot first!";
         private static string DISCONNECTED_MESSAGE = "#autoLOC_USI_WOLF_HOPPER_DISCONNECTED_MESSAGE"; // "Hopper has been disconnected from the depot.";
 
-        private IDepotRegistry _depotRegistry;
-        private IRecipe _wolfRecipe;
+        private IRegistryCollection _registry;
+        private double _nextBiomeUpdate = 0d;
+
+        public IRecipe WolfRecipe { get; private set; }
+
+        [KSPField(guiActive = true, guiActiveEditor = false, guiName = "Current biome test", isPersistant = false)]
+        public string CurrentBiome = "???";
+
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false)]
+        public string HopperId;
 
         [KSPField]
         public string InputResources = string.Empty;
@@ -49,7 +58,7 @@ namespace WOLF
                 Messenger.DisplayMessage(Messenger.INVALID_SITUATION_MESSAGE);
                 return;
             }
-            if (!_depotRegistry.HasDepot(body, biome))
+            if (!_registry.HasDepot(body, biome))
             {
                 Messenger.DisplayMessage(Messenger.MISSING_DEPOT_MESSAGE);
                 return;
@@ -68,8 +77,8 @@ namespace WOLF
             }
 
             // Negotiate recipes with the depot
-            var depot = _depotRegistry.GetDepot(body, biome);
-            var result = depot.Negotiate(_wolfRecipe);
+            var depot = _registry.GetDepot(body, biome);
+            var result = depot.Negotiate(WolfRecipe);
 
             if (result is FailedNegotiationResult)
             {
@@ -81,11 +90,16 @@ namespace WOLF
                 return;
             }
 
+            // Register hopper
+            HopperId = _registry.CreateHopper(depot, WolfRecipe);
+
             DepotBody = body;
             DepotBiome = biome;
             IsConnectedToDepot = true;
+
             Events["ConnectToDepotEvent"].guiActive = false;
             Events["DisconnectFromDepotEvent"].guiActive = true;
+
             // Hook into vessel destroyed event to release resources back to depot
             if (vessel != null)
             {
@@ -148,12 +162,19 @@ namespace WOLF
                 DISCONNECT_FROM_DEPOT_GUI_NAME = disconnectGuiName;
             }
 
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME", out string currentBiomeGuiName))
+            {
+                CURRENT_BIOME_GUI_NAME = currentBiomeGuiName;
+            }
+            Fields["CurrentBiome"].guiName = CURRENT_BIOME_GUI_NAME;
+
+
             Events["ConnectToDepotEvent"].guiName = CONNECT_TO_DEPOT_GUI_NAME;
             Events["DisconnectFromDepotEvent"].guiName = DISCONNECT_FROM_DEPOT_GUI_NAME;
 
             // Find the WOLF scenario and parse the hopper recipe
             var scenario = FindObjectOfType<WOLF_ScenarioModule>();
-            _depotRegistry = scenario.ServiceManager.GetService<IRegistryCollection>();
+            _registry = scenario.ServiceManager.GetService<IRegistryCollection>();
 
             ParseWolfRecipe();
 
@@ -162,18 +183,11 @@ namespace WOLF
             {
                 var body = vessel.mainBody.name;
                 var biome = WOLF_AbstractPartModule.GetVesselBiome(vessel);
-                var depot = _depotRegistry.GetDepot(body, biome);
+                var depot = _registry.GetDepot(DepotBody, DepotBiome);
 
-                if (depot == null)
+                if (depot == null || depot.Body != body || depot.Biome != biome)
                 {
                     Messenger.DisplayMessage(LOST_CONNECTION_MESSAGE);
-                    IsConnectedToDepot = false;
-                    StopResourceConverter();
-                }
-                else if (depot.Body != body || depot.Biome != biome)
-                {
-                    Messenger.DisplayMessage(LOST_CONNECTION_MESSAGE);
-                    IsConnectedToDepot = false;
                     StopResourceConverter();
                     ReleaseResources();
                 }
@@ -215,18 +229,16 @@ namespace WOLF
                 return;
             }
 
-            _wolfRecipe = new Recipe(inputIngredients, new Dictionary<string, int>());
+            WolfRecipe = new Recipe(inputIngredients, new Dictionary<string, int>());
         }
 
         protected void ReleaseResources()
         {
-            var body = vessel.mainBody.name;
-            var biome = WOLF_AbstractPartModule.GetVesselBiome(vessel);
-            var depot = _depotRegistry.GetDepot(body, biome);
+            var depot = _registry.GetDepot(DepotBody, DepotBiome);
             if (depot != null && IsConnectedToDepot)
             {
                 var resourcesToRelease = new Dictionary<string, int>();
-                foreach (var input in _wolfRecipe.InputIngredients)
+                foreach (var input in WolfRecipe.InputIngredients)
                 {
                     resourcesToRelease.Add(input.Key, input.Value * -1);
                 }
@@ -235,6 +247,23 @@ namespace WOLF
                 if (result is FailedNegotiationResult)
                 {
                     Debug.LogError("[WOLF] Could not release hopper resources back to depot.");
+                }
+
+                IsConnectedToDepot = false;
+            }
+            _registry.RemoveHopper(HopperId);
+        }
+
+        protected virtual void Update()
+        {
+            // Display current biome in PAW
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                var now = Planetarium.GetUniversalTime();
+                if (now >= _nextBiomeUpdate)
+                {
+                    _nextBiomeUpdate = now + 1d;  // wait one second between biome updates
+                    CurrentBiome = WOLF_AbstractPartModule.GetVesselBiome(vessel);
                 }
             }
         }

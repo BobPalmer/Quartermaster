@@ -16,11 +16,15 @@ namespace WOLF
         private static string INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE"; // "Origin depot needs an additional ({0}) TransportCredits to support this route."; 
         private static string INVALID_CONNECTION_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INVALID_CONNECTION_MESSAGE"; // "Destination must be in a different biome.";
         private static string ROUTE_COST_GUI_NAME = "#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_COST_GUI_NAME";  // "Route cost";
+        private static string ORIGIN_DEPOT_GUI_NAME = "#autoLOC_USI_WOLF_TRANSPORTER_ORIGIN_DEPOT_GUI_NAME";  // "Origin depot";
         private static string ROUTE_IN_PROGRESS_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_IN_PROGRESS_MESSAGE"; // "You must complete or cancel the current route before starting a new route!";
 
         private static readonly int MINIMUM_PAYLOAD = 1;
         private static readonly double ROUTE_COST_MULTIPLIER = 1d;
         private readonly WOLF_GuiConfirmationDialog _confirmationDialog;
+
+        [KSPField(guiActive = false, guiActiveEditor = false, guiName = "Origin depot")]
+        public string OriginDepotDisplay = string.Empty;
 
         [KSPField(guiActive = true, guiActiveEditor = false, guiName = "Route cost")]
         public int RouteCost = 0;
@@ -85,6 +89,8 @@ namespace WOLF
 
             OriginBody = vessel.mainBody.name;
             OriginBiome = GetVesselBiome();
+            OriginDepotDisplay = string.Format("{0}:{1}", OriginBody, OriginBiome);
+            Fields["OriginDepotDisplay"].guiActive = true;
             StartingVesselMass = vessel.totalMass;
             IsConnectedToOrigin = true;
 
@@ -225,6 +231,12 @@ namespace WOLF
             }
             Fields["CurrentBiome"].guiName = CURRENT_BIOME_GUI_NAME;
 
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_ORIGIN_DEPOT_GUI_NAME", out string originDepotGuiName))
+            {
+                ORIGIN_DEPOT_GUI_NAME = originDepotGuiName;
+            }
+            Fields["OriginDepotDisplay"].guiName = ORIGIN_DEPOT_GUI_NAME;
+
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_COST_GUI_NAME", out string routeCostGuiName))
             {
                 ROUTE_COST_GUI_NAME = routeCostGuiName;
@@ -259,6 +271,8 @@ namespace WOLF
         {
             OriginBody = string.Empty;
             OriginBiome = string.Empty;
+            OriginDepotDisplay = string.Empty;
+            Fields["OriginDepotDisplay"].guiActive = false;
             StartingVesselMass = 0d;
             IsConnectedToOrigin = false;
 

@@ -54,7 +54,7 @@ namespace WOLF
             var recipes = vessel
                 .FindPartModulesImplementing<WOLF_AbstractPartModule>()
                 .Where(p => !(p is WOLF_SurveyModule))
-                .Select(p => p.Recipe)
+                .Select(p => p.WolfRecipe)
                 .ToList();
 
             // Add crew recipe

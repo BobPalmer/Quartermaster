@@ -26,15 +26,15 @@ namespace WOLF
         {
             base.OnStart(state);
 
-            if (Recipe.OutputIngredients.Count > 0)
+            if (WolfRecipe.OutputIngredients.Count > 0)
             {
-                var resources = new string[Recipe.OutputIngredients.Count];
-                Recipe.OutputIngredients.Keys.CopyTo(resources, 0);
+                var resources = new string[WolfRecipe.OutputIngredients.Count];
+                WolfRecipe.OutputIngredients.Keys.CopyTo(resources, 0);
                 foreach (var resource in resources)
                 {
                     var abundance = CalculateAbundance(resource);
 
-                    Recipe.OutputIngredients[resource] *= abundance;
+                    WolfRecipe.OutputIngredients[resource] *= abundance;
                 }
             }
         }
