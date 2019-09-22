@@ -19,6 +19,7 @@ namespace WOLF
             Debug.Log("[WOLF] GuiConfirmationDialog created.");
             _transporterModule = transporterModule;
             Start();
+            Resizable = false;
         }
 
         protected override void DrawWindowContents(int windowId)

@@ -358,6 +358,25 @@ namespace WOLF
             }
         }
 
+        public override void SetVisible(bool visible)
+        {
+            // Refresh the available resources
+            if (visible)
+                GetAvailableResources();
+
+            base.SetVisible(visible);
+        }
+
+        /// <summary>
+        /// Clear the cache and close the window.
+        /// </summary>
+        public void ResetAndClose()
+        {
+            SelectRoute(0);
+
+            SetVisible(false);
+        }
+
         /// <summary>
         /// Change the selected route.
         /// </summary>
@@ -369,6 +388,11 @@ namespace WOLF
             _selectedRouteIndex = routeIndex;
             _selectedRoute = _routes.ToArray()[routeIndex].Value;
             _routeResources = _selectedRoute.GetResources();
+            GetAvailableResources();
+        }
+
+        protected void GetAvailableResources()
+        {
             _originDepotResources = _selectedRoute.OriginDepot
                 .GetResources()
                 .Where(r => !r.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX)
@@ -406,16 +430,6 @@ namespace WOLF
                 return 0;
             else
                 return index + 1;
-        }
-
-        /// <summary>
-        /// Clear the cache and close the window.
-        /// </summary>
-        public void ResetAndClose()
-        {
-            SelectRoute(0);
-
-            SetVisible(false);
         }
     }
 }
