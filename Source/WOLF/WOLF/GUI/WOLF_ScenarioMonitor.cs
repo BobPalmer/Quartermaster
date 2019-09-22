@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace WOLF
 {
@@ -43,6 +44,7 @@ namespace WOLF
         private string[] _tabLabels;
         private Rect _windowPosition = new Rect(300, 60, 700, 460);
         private GUIStyle _windowStyle;
+        private int _windowId;
         private ApplicationLauncherButton _wolfButton;
         private IRegistryCollection _wolfRegistry;
         private WOLF_ScenarioModule _wolfScenario;
@@ -86,6 +88,8 @@ namespace WOLF
             _wolfRegistry = _wolfScenario.ServiceManager.GetService<IRegistryCollection>();
             _routeMonitor = _wolfScenario.ServiceManager.GetService<WOLF_RouteMonitor>();
             _planningMonitor = _wolfScenario.ServiceManager.GetService<WOLF_PlanningMonitor>();
+
+            _windowId = Random.Range(int.MinValue, int.MaxValue);
 
             if (!_hasInitStyles)
             {
@@ -189,7 +193,7 @@ namespace WOLF
                     return;
 
                 // Draw main window
-                _windowPosition = GUILayout.Window(12, _windowPosition, OnWindow, "WOLF Dashboard", _windowStyle);
+                _windowPosition = GUILayout.Window(_windowId, _windowPosition, OnWindow, "WOLF Dashboard", _windowStyle);
 
                 // Draw child windows
                 foreach (var window in _childWindows)

@@ -297,8 +297,8 @@ namespace WOLF
                 .SelectMany(p => p.FindModulesImplementing<IRecipeProvider>())
                 .Where(p => !(p is WOLF_SurveyModule));
 
-            _hasHoppers = parts.Any(p => p is WOLF_HarvesterModule);
-            _hasNonHoppers = parts.Any(p => !(p is WOLF_HarvesterModule));
+            _hasHoppers = parts.Any(p => p is WOLF_HopperModule);
+            _hasNonHoppers = parts.Any(p => !(p is WOLF_HopperModule));
 
             var recipes = parts
                 .Select(p => p.WolfRecipe)

@@ -15,9 +15,11 @@ namespace WOLF
         private static string INSUFFICIENT_PAYLOAD_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_PAYLOAD_MESSAGE"; // "This vessel is too small to establish a transport route.";
         private static string INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INSUFFICIENT_TRANSPORT_CREDITS_MESSAGE"; // "Origin depot needs an additional ({0}) TransportCredits to support this route."; 
         private static string INVALID_CONNECTION_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_INVALID_CONNECTION_MESSAGE"; // "Destination must be in a different biome.";
-        private static string ROUTE_COST_GUI_NAME = "#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_COST_GUI_NAME";  // "Route cost";
         private static string ORIGIN_DEPOT_GUI_NAME = "#autoLOC_USI_WOLF_TRANSPORTER_ORIGIN_DEPOT_GUI_NAME";  // "Origin depot";
+        private static string ROUTE_COST_GUI_NAME = "#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_COST_GUI_NAME";  // "Route cost";
         private static string ROUTE_IN_PROGRESS_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_IN_PROGRESS_MESSAGE"; // "You must complete or cancel the current route before starting a new route!";
+        private static string ROUTE_STARTED_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_STARTED_MESSAGE";  // "A new transport route has been initiated. Fly safe!";
+        private static string ROUTE_CANCELLED_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_CANCELLED_MESSAGE";  // "Transport route has been cancelled.";
 
         private static readonly int MINIMUM_PAYLOAD = 1;
         private static readonly double ROUTE_COST_MULTIPLIER = 1d;
@@ -61,6 +63,7 @@ namespace WOLF
         public void ConfirmCancelRoute()
         {
             ResetRoute();
+            Messenger.DisplayMessage(ROUTE_CANCELLED_MESSAGE);
         }
 
         [KSPEvent(guiActive = true, guiActiveEditor = false)]
@@ -93,6 +96,7 @@ namespace WOLF
             Fields["OriginDepotDisplay"].guiActive = true;
             StartingVesselMass = vessel.totalMass;
             IsConnectedToOrigin = true;
+            Messenger.DisplayMessage(ROUTE_STARTED_MESSAGE);
 
             ToggleEventButtons();
         }
@@ -223,6 +227,14 @@ namespace WOLF
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_IN_PROGRESS_MESSAGE", out string routeInProgressMessage))
             {
                 ROUTE_IN_PROGRESS_MESSAGE = routeInProgressMessage;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_STARTED_MESSAGE", out string routeStartedMessage))
+            {
+                ROUTE_STARTED_MESSAGE = routeStartedMessage;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_ROUTE_CANCELLED_MESSAGE", out string routeCancelledMessage))
+            {
+                ROUTE_CANCELLED_MESSAGE = routeCancelledMessage;
             }
 
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_CURRENT_BIOME_GUI_NAME", out string currentBiomeGuiName))
