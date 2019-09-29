@@ -10,6 +10,7 @@ namespace WOLF
         #region Local static and instance variables
         private static string INSUFFICIENT_PAYLOAD_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_UI_INSUFFICIENT_PAYLOAD_MESSAGE"; // "This transfer exceeds the available payload capacity.";
         private static string INSUFFICIENT_ORIGIN_RESOURCES_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_UI_INSUFFICIENT_ORIGIN_RESOURCES_MESSAGE"; // "This transfer exceeds the availability at the origin depot.";
+        private static string CANNOT_CANCEL_TRANSFER_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_UI_CANNOT_CANCEL_TRANSFER_MESSAGE";  // "Cannot cancel this transfer. {0} is in use.";
         private static string NO_ROUTES_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_UI_NO_ROUTES_MESSAGE"; // "There are currently no established routes.";
         private static readonly string ROUTE_NAME_TEMPLATE = " {0}:{1} => {2}:{3} ";
 
@@ -53,8 +54,17 @@ namespace WOLF
             {
                 NO_ROUTES_MESSAGE = noRoutes;
             }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_TRANSPORTER_UI_CANNOT_CANCEL_TRANSFER_MESSAGE", out string cannotCancelTransfer))
+            {
+                CANNOT_CANCEL_TRANSFER_MESSAGE = cannotCancelTransfer;
+            }
 
             // Build route list
+            BuildRouteList();
+        }
+
+        private void BuildRouteList()
+        {
             var routes = _registry.GetRoutes();
             if (routes == null || routes.Count < 1)
             {
@@ -62,7 +72,7 @@ namespace WOLF
             }
             else
             {
-                _routes = routes
+                var routeIndex = routes
                     .OrderBy(r => r.OriginBody)
                         .ThenBy(r => r.OriginBiome)
                         .ThenBy(r => r.DestinationBody)
@@ -71,6 +81,15 @@ namespace WOLF
                         r => string.Format(ROUTE_NAME_TEMPLATE, r.OriginBody, r.OriginBiome, r.DestinationBody, r.DestinationBiome),
                         r => r);
 
+                // If we've already built the route list previously and the size hasn't changed, then we're done
+                if (_routes != null && _routes.Count == routeIndex.Count)
+                {
+                    SelectRoute(0);
+                    _routeComboBox.SelectedItemIndex = 0;
+                    return;
+                }
+
+                _routes = routeIndex;
                 var routeNames = _routes.Keys
                     .Select(k => new GUIContent(k))
                     .ToArray();
@@ -317,7 +336,7 @@ namespace WOLF
                         {
                             foreach (var brokenResource in (result as BrokenNegotiationResult).BrokenDependencies)
                             {
-                                Messenger.DisplayMessage(brokenResource);
+                                Messenger.DisplayMessage(string.Format(CANNOT_CANCEL_TRANSFER_MESSAGE, brokenResource));
                             }
                         }
                         else if (result is FailedNegotiationResult)
@@ -360,9 +379,11 @@ namespace WOLF
 
         public override void SetVisible(bool visible)
         {
-            // Refresh the available resources
+            // Refresh the available routes & resources
             if (visible)
-                GetAvailableResources();
+            {
+                BuildRouteList();
+            }
 
             base.SetVisible(visible);
         }

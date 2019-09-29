@@ -7,6 +7,7 @@ namespace WOLF
     public class ConfigurationFromFile
     {
         public string AllowedHarvestableResources { get; set; }
+        public string BlacklistedHomeworldResources { get; set; }
     }
 
     public class Configuration
@@ -16,16 +17,46 @@ namespace WOLF
         public static readonly List<string> DefaultHarvestableResources = new List<string>
         {
             "Dirt", "ExoticMinerals", "Gypsum", "Hydrates", "MetallicOre", "Minerals",
-            "Ore", "Oxygen", "RareMetals", "Silicates", "Substrate", "Water"
+            "Ore", "Oxygen", "RareMetals", "Silicates", "Substrate", "Water", "XenonGas"
         };
 
-        public List<string> AllowedHarvestableResources { get; set; }
+        private List<string> _allowedHarvestableResources;
+        private List<string> _allowedHarvestableResourcesOnHomeworld;
+        private List<string> _blacklistedHomeworldResources;
+
+        public List<string> AllowedHarvestableResources
+        {
+            get
+            {
+                if (_allowedHarvestableResources == null || _allowedHarvestableResources.Count < 1)
+                {
+                    _allowedHarvestableResources = DefaultHarvestableResources;
+                }
+
+                return _allowedHarvestableResources;
+            }
+        }
+
+        public List<string> AllowedHarvestableResourcesOnHomeworld
+        {
+            get
+            {
+                if (_allowedHarvestableResourcesOnHomeworld == null)
+                {
+                    _allowedHarvestableResourcesOnHomeworld = AllowedHarvestableResources
+                        .Where(r => !_blacklistedHomeworldResources.Contains(r))
+                        .ToList();
+                }
+
+                return _allowedHarvestableResourcesOnHomeworld;
+            }
+        }
 
         public static List<string> ParseHarvestableResources(string resources)
         {
             if (string.IsNullOrEmpty(resources))
             {
-                return DefaultHarvestableResources;
+                return new List<string>();
             }
             else
             {
@@ -39,15 +70,31 @@ namespace WOLF
             }
         }
 
-        public void SetHarvestableResources(List<string> resources)
+        public void SetBlacklistedHomeworldResources(List<string> resources)
         {
-            if (resources == null || resources.Count < 1)
+            if (resources == null)
             {
-                AllowedHarvestableResources = DefaultHarvestableResources;
+                _blacklistedHomeworldResources = new List<string>();
             }
             else
             {
-                AllowedHarvestableResources = resources
+                _blacklistedHomeworldResources = resources
+                    .Distinct()
+                    .OrderBy(r => r)
+                    .ToList();
+            }
+        }
+
+        public void SetBlacklistedHomeworldResources(string resourceList)
+        {
+            _blacklistedHomeworldResources = ParseHarvestableResources(resourceList);
+        }
+
+        public void SetHarvestableResources(List<string> resources)
+        {
+            if (resources != null)
+            {
+                _allowedHarvestableResources = resources
                     .Distinct()
                     .OrderBy(r => r)
                     .ToList();
@@ -56,7 +103,7 @@ namespace WOLF
 
         public void SetHarvestableResources(string resourceList)
         {
-            AllowedHarvestableResources = ParseHarvestableResources(resourceList);
+            _allowedHarvestableResources = ParseHarvestableResources(resourceList);
         }
     }
 }

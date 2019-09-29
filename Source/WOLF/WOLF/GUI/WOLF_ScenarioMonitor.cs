@@ -45,6 +45,7 @@ namespace WOLF
         private Rect _windowPosition = new Rect(300, 60, 700, 460);
         private GUIStyle _windowStyle;
         private int _windowId;
+        private GUIStyle _dividerStyle;
         private ApplicationLauncherButton _wolfButton;
         private IRegistryCollection _wolfRegistry;
         private WOLF_ScenarioModule _wolfScenario;
@@ -179,6 +180,12 @@ namespace WOLF
             {
                 fontSize = 10
             };
+            _dividerStyle = new GUIStyle
+            {
+                margin = new RectOffset(0, 0, 4, 4),
+                fixedHeight = 1f
+            };
+
             _hasInitStyles = true;
         }
 
@@ -226,6 +233,12 @@ namespace WOLF
             }
             GUILayout.EndHorizontal();
 
+            // Display filter buttons
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Filters", _labelStyle, GUILayout.Width(70));
+            GUILayout.Label("<color=#FFD900>Coming soon...</color>", _labelStyle, GUILayout.Width(300));
+            GUILayout.EndHorizontal();
+
             // Show the UI for the currently selected tab
             switch (activeTab)
             {
@@ -264,7 +277,7 @@ namespace WOLF
         /// </summary>
         private void ShowResources(Func<IResourceStream, bool> resourceFilter, string incomingHeaderLabel = "Incoming", string outgoingHeaderLabel = "Outgoing", string availableHeaderLabel = "Available")
         {
-            _scrollPos = GUILayout.BeginScrollView(_scrollPos, _scrollStyle, GUILayout.Width(680), GUILayout.Height(830));
+            _scrollPos = GUILayout.BeginScrollView(_scrollPos, _scrollStyle, GUILayout.Width(680), GUILayout.Height(800));
             GUILayout.BeginVertical();
 
             try

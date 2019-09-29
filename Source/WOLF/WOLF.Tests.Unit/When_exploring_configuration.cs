@@ -51,5 +51,21 @@ namespace WOLF.Tests.Unit
             Assert.Contains(resources, r => r == "Ore");
             Assert.Contains(resources, r => r == "Oxygen");
         }
+
+        [Fact]
+        public void Can_blacklist_resources_on_homeworld()
+        {
+            var configuration = new Configuration();
+
+            configuration.SetHarvestableResources("ExoticMinerals,Ore");
+            configuration.SetBlacklistedHomeworldResources("ExoticMinerals");
+            var resources = configuration.AllowedHarvestableResourcesOnHomeworld;
+
+            Assert.NotNull(resources);
+            Assert.NotEmpty(resources);
+            Assert.Single(resources);
+            Assert.Contains(resources, r => r == "Ore");
+            Assert.DoesNotContain(resources, r => r == "ExoticMinerals");
+        }
     }
 }

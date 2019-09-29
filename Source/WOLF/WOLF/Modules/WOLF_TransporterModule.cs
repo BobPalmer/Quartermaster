@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace WOLF
 {
@@ -23,6 +22,7 @@ namespace WOLF
 
         private static readonly int MINIMUM_PAYLOAD = 1;
         private static readonly double ROUTE_COST_MULTIPLIER = 1d;
+        private static readonly double ROUTE_COST_ROUNDING_FLOOR = 0.1d;
         private readonly WOLF_GuiConfirmationDialog _confirmationDialog;
 
         [KSPField(guiActive = false, guiActiveEditor = false, guiName = "Origin depot")]
@@ -167,6 +167,13 @@ namespace WOLF
                 else
                     DisplayMessage(string.Format(Messenger.SUCCESSFUL_DEPLOYMENT_MESSAGE, OriginBody + " and " + destinationBody));
 
+                // Add rewards
+                var homeworld = FlightGlobals.GetHomeBodyName();
+                if (destinationBody == homeworld && OriginBody != destinationBody)
+                {
+                    RewardsManager.AddFunds(routePayload);
+                }
+
                 ResetRoute();
             }
             catch (Exception ex)
@@ -182,13 +189,16 @@ namespace WOLF
             if (massDelta < 0)
                 return 0;
 
-            var routeCost = massDelta * ROUTE_COST_MULTIPLIER;
+            if ((massDelta - Math.Truncate(massDelta)) > ROUTE_COST_ROUNDING_FLOOR)
+                massDelta += 1d;
+
+            var routeCost = Math.Round(massDelta * ROUTE_COST_MULTIPLIER, MidpointRounding.AwayFromZero);
             return Math.Max(Convert.ToInt32(routeCost), 0);
         }
 
         private int CalculateRoutePayload()
         {
-            return Convert.ToInt32(vessel.totalMass);
+            return Convert.ToInt32(Math.Round(vessel.totalMass, MidpointRounding.AwayFromZero));
         }
 
         public override string GetInfo()

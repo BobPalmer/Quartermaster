@@ -17,19 +17,23 @@ namespace WOLF
             double latitude,
             double longitude,
             HarvestTypes[] harvestTypes,
-            Configuration config)
+            Configuration config,
+            bool forHomeworld = false)
         {
             if (config == null)
             {
                 config = new Configuration();
-                config.SetHarvestableResources("");
             }
-            else if (config.AllowedHarvestableResources == null
+
+            if (config.AllowedHarvestableResources == null
                 || config.AllowedHarvestableResources.Count < 1)
             {
                 config.SetHarvestableResources("");
             }
 
+            var allowedResources = forHomeworld
+                ? config.AllowedHarvestableResourcesOnHomeworld
+                : config.AllowedHarvestableResources;
             var abundanceRequest = new AbundanceRequest
             {
                 Altitude = altitude,
@@ -39,6 +43,12 @@ namespace WOLF
                 Longitude = longitude
             };
             var radiusMultiplier = Math.Sqrt(FlightGlobals.Bodies[bodyIndex].Radius) / RESOURCE_ABUNDANCE_RADIUS_MULT;
+            var bodyMultiplier = 1;
+            if (!FlightGlobals.currentMainBody.isHomeWorld)
+            {
+                bodyMultiplier = Math.Max(1, WOLF_GameParameters.ResourceAbundanceMultiplierValue);
+            }
+
             var resourceList = new Dictionary<string, int>();
             foreach (var harvestType in harvestTypes.Distinct())
             {
@@ -50,7 +60,7 @@ namespace WOLF
                     abundanceRequest.ResourceName = resource;
 
                     var baseAbundance = ResourceMap.Instance.GetAbundance(abundanceRequest);
-                    int abundance = (int)(baseAbundance * RESOURCE_ABUNDANCE_MULTIPLIER * radiusMultiplier);
+                    int abundance = (int)(baseAbundance * RESOURCE_ABUNDANCE_MULTIPLIER * radiusMultiplier * bodyMultiplier);
                     if (abundance > RESOURCE_ABUNDANCE_FLOOR)
                     {
                         abundance = Math.Min(abundance, RESOURCE_ABUNDANCE_CEILING);
@@ -60,7 +70,7 @@ namespace WOLF
                         abundance = 0;
                     }
 
-                    if (config.AllowedHarvestableResources.Contains(resource))
+                    if (allowedResources.Contains(resource))
                     {
                         var wolfResourceName = resource + WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX;
                         if (resourceList.ContainsKey(wolfResourceName))

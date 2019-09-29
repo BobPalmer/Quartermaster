@@ -21,17 +21,21 @@ namespace WOLF
         {
             var configNodes = GameDatabase.Instance.GetConfigNodes("WOLF_CONFIGURATION");
             var allowedResources = new List<string>();
+            var blacklistedResources = new List<string>();
 
             foreach (var node in configNodes)
             {
                 var configFromFile = ResourceUtilities.LoadNodeProperties<ConfigurationFromFile>(node);
                 var resources = Configuration.ParseHarvestableResources(configFromFile.AllowedHarvestableResources);
+                var blacklist = Configuration.ParseHarvestableResources(configFromFile.BlacklistedHomeworldResources);
 
                 allowedResources.AddRange(resources);
+                blacklistedResources.AddRange(blacklist);
             }
 
             var config = new Configuration();
             config.SetHarvestableResources(allowedResources);
+            config.SetBlacklistedHomeworldResources(blacklistedResources);
 
             return config;
         }

@@ -12,6 +12,7 @@ namespace WOLF
         private static string DEPOT_ALREADY_ESTABLISHED_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_ALREADY_ESTABLISHED_MESSAGE"; // "A depot has already been established here!";
         private static string ESTABLISH_DEPOT_GUI_NAME = "#autoLOC_USI_WOLF_ESTABLISH_DEPOT_GUI_NAME"; // "Establish depot."
         private static string INVALID_SITUATION_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_INVALID_SITUATION_MESSAGE"; // "Can only estabish a depot when landed on the surface or in orbit.";
+        private static string INVALID_ORBIT_SITUATION_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_INVALID_ORBIT_SITUATION_MESSAGE"; // "Orbital depots must be in a low orbit with eccentricity below 0.1";
         private static string SUCCESSFUL_DEPLOYMENT_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_SUCCESSFUL_DEPLOYMENT_MESSAGE"; // "Your depot has been established at {0} on {1}!";
         private static string SUCCESSFUL_SURVEY_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_SUCCESSFUL_SURVEY_MESSAGE"; // "Survey completed at {0} on {1}!";
         private static string SURVEY_ALREADY_COMPLETED_MESSAGE = "#autoLOC_USI_WOLF_DEPOT_SURVEY_ALREADY_COMPLETE_MESSAGE"; // "A survey has already been completed in this biome!";
@@ -52,13 +53,16 @@ namespace WOLF
 
         protected Dictionary<string,int> CalculateAbundance(HarvestTypes[] harvestTypes)
         {
-            return ResourceManager.GetResourceAbundance(
+            var abundance = ResourceManager.GetResourceAbundance(
                 bodyIndex: FlightGlobals.currentMainBody.flightGlobalsIndex,
                 altitude: vessel.altitude,
                 latitude: vessel.latitude,
                 longitude: vessel.longitude,
                 harvestTypes: harvestTypes,
-                config: _scenario.Configuration);
+                config: _scenario.Configuration,
+                forHomeworld: FlightGlobals.currentMainBody.isHomeWorld);
+
+            return abundance;
         }
 
         protected override void ConnectToDepot()
@@ -75,6 +79,11 @@ namespace WOLF
             if (biome == string.Empty)
             {
                 DisplayMessage(INVALID_SITUATION_MESSAGE);
+                return;
+            }
+            if (biome.StartsWith("Orbit") && biome != "Orbit")
+            {
+                DisplayMessage(INVALID_ORBIT_SITUATION_MESSAGE);
                 return;
             }
 
@@ -131,6 +140,9 @@ namespace WOLF
                 depot.NegotiateProvider(harvestableResources);
 
                 DisplayMessage(string.Format(SUCCESSFUL_SURVEY_MESSAGE, biome, body));
+
+                // Add rewards
+                RewardsManager.AddScience();
             }
             else
             {
@@ -174,6 +186,10 @@ namespace WOLF
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_DEPOT_INVALID_SITUATION_MESSAGE", out string situationMessage))
             {
                 INVALID_SITUATION_MESSAGE = situationMessage;
+            }
+            if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_DEPOT_INVALID_ORBIT_SITUATION_MESSAGE", out string orbitSituationMessage))
+            {
+                INVALID_ORBIT_SITUATION_MESSAGE = orbitSituationMessage;
             }
             if (Localizer.TryGetStringByTag("#autoLOC_USI_WOLF_DEPOT_SUCCESSFUL_DEPLOYMENT_MESSAGE", out string deploySuccessMessage))
             {

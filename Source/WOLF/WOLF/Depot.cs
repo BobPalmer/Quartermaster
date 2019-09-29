@@ -172,7 +172,7 @@ namespace WOLF
 
                 stream.Incoming += resource.Value;
 
-                // This should never happen since we don't allow removing providers from WOLF but just to be safe...
+                // Sanity check
                 if (stream.Incoming < 0)
                     stream.Incoming = 0;
             }
