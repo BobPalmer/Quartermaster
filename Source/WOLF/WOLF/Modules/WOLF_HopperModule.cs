@@ -58,6 +58,11 @@ namespace WOLF
                 Messenger.DisplayMessage(Messenger.INVALID_SITUATION_MESSAGE);
                 return;
             }
+            if (biome.StartsWith("Orbit") && biome != "Orbit")
+            {
+                Messenger.DisplayMessage(Messenger.INVALID_ORBIT_SITUATION_MESSAGE);
+                return;
+            }
             if (!_registry.HasDepot(body, biome))
             {
                 Messenger.DisplayMessage(Messenger.MISSING_DEPOT_MESSAGE);

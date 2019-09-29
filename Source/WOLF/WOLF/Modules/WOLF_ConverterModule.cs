@@ -21,6 +21,10 @@ namespace WOLF
             {
                 return Messenger.INVALID_SITUATION_MESSAGE;
             }
+            if (biome.StartsWith("Orbit") && biome != "Orbit")
+            {
+                return Messenger.INVALID_ORBIT_SITUATION_MESSAGE;
+            }
             if (!_registry.HasDepot(body, biome))
             {
                 return Messenger.MISSING_DEPOT_MESSAGE;
@@ -61,6 +65,7 @@ namespace WOLF
             var crewModule = vessel.vesselModules
                 .Where(m => m is WOLF_CrewModule)
                 .FirstOrDefault() as WOLF_CrewModule;
+            IRecipe crewRecipe;
             if (crewModule == null)
             {
                 DisplayMessage("BUG: Could not find crew module.");
@@ -73,7 +78,7 @@ namespace WOLF
             }
             else
             {
-                var crewRecipe = crewModule.GetCrewRecipe();
+                crewRecipe = crewModule.GetCrewRecipe();
                 recipes.Add(crewRecipe);
             }
 
@@ -94,6 +99,16 @@ namespace WOLF
             }
 
             DisplayMessage(string.Format(Messenger.SUCCESSFUL_DEPLOYMENT_MESSAGE, body));
+
+            // Add rewards
+            if (crewRecipe != null)
+            {
+                var totalCrewPoints = crewRecipe.OutputIngredients
+                    .Sum(i => i.Value);
+
+                RewardsManager.AddReputation(totalCrewPoints);
+            }
+
             Poof.GoPoof(vessel);
         }
 

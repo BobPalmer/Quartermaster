@@ -109,6 +109,8 @@ namespace WOLF
             vessel.checkLanded();
             vessel.checkSplashed();
 
+            ExperimentSituations experimentSituation = ScienceUtil.GetExperimentSituation(vessel);
+
             switch (vessel.situation)
             {                
                 case Situations.LANDED:
@@ -119,7 +121,28 @@ namespace WOLF
                     else
                         return GetVesselLandedAtBiome(vessel.landedAt);
                 case Situations.ORBITING:
-                    return "Orbit";
+                    var altitude = ScienceUtil.GetExperimentSituation(vessel) == ExperimentSituations.InSpaceLow
+                        ? "" : "High";
+                    var ecc = vessel.GetOrbit().eccentricity > 0.1d
+                        ? "Eccentric" : "";
+                    var suffix = string.Empty;
+                    if (!string.IsNullOrEmpty(altitude))
+                    {
+                        suffix = altitude;
+                    }
+                    if (!string.IsNullOrEmpty(ecc))
+                    {
+                        if (!string.IsNullOrEmpty(suffix))
+                        {
+                            suffix += "/";
+                        }
+                        suffix += ecc;
+                    }
+                    if (!string.IsNullOrEmpty(suffix))
+                    {
+                        suffix = ":Too " + suffix;
+                    }
+                    return $"Orbit{suffix}";
                 default:
                     return string.Empty;
             }
