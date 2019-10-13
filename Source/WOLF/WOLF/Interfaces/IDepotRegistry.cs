@@ -6,6 +6,7 @@ namespace WOLF
     {
         IDepot CreateDepot(string body, string biome);
         IDepot GetDepot(string body, string biome);
+        bool TryGetDepot(string body, string biome, out IDepot depot);
         List<IDepot> GetDepots();
         bool HasDepot(string body, string biome);
     }

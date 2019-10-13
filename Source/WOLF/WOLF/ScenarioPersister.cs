@@ -89,6 +89,14 @@ namespace WOLF
             return depot;
         }
 
+        public bool TryGetDepot(string body, string biome, out IDepot depot)
+        {
+            depot = _depots.Where(d => d.Body == body && d.Biome == biome).FirstOrDefault();
+
+            return depot != null;
+
+        }
+
         public List<IDepot> GetDepots()
         {
             return _depots.ToList() ?? new List<IDepot>();
@@ -116,7 +124,7 @@ namespace WOLF
 
         public bool HasDepot(string body, string biome)
         {
-            return _depots.Any(d => d.Body == body && d.Biome == biome);
+            return _depots.Any(d => d.Body == body && d.Biome == biome && d.IsEstablished);
         }
 
         public bool HasRoute(string originBody, string originBiome, string destinationBody, string destinationBiome)

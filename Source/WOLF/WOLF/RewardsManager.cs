@@ -4,10 +4,6 @@ namespace WOLF
 {
     public static class RewardsManager
     {
-        private static readonly double FUNDS_PER_PAYLOAD_UNIT = 100d;
-        private static readonly float SCIENCE_PER_BIOME = 100f;
-        private static readonly float REP_PER_CREW_POINT = 10f;
-
         private static readonly string FUNDS_ADDED_MESSAGE = "#autoLOC_USI_WOLF_REWARDS_FUNDS_ADDED_MESSAGE";  // "You gained {0} Funds!";
         private static readonly string REPUTATION_ADDED_MESSAGE = "#autoLOC_USI_WOLF_REWARDS_SCIENCE_ADDED_MESSAGE";  // "You gained {0} Science!";
         private static readonly string SCIENCE_ADDED_MESSAGE = "#autoLOC_USI_WOLF_REWARDS_REPUTATION_ADDED_MESSAGE";  // "You gained {0} Reputation!";
@@ -28,32 +24,50 @@ namespace WOLF
             }
         }
 
-        public static void AddFunds(int payload)
+        public static void AddTransportFunds(int payload)
         {
             if (Funding.Instance != null)
             {
-                var funds = FUNDS_PER_PAYLOAD_UNIT * payload;
+                double funds = WOLF_GameParameters.TransportFundsRewardValue * payload;
                 Funding.Instance.AddFunds(funds, TransactionReasons.ContractReward);
                 Messenger.DisplayMessage(string.Format(FUNDS_ADDED_MESSAGE, funds.ToString("F0")));
             }
         }
 
-        public static void AddReputation(int crewPoints)
+        public static void AddDepotFunds(bool isHomeworld)
+        {
+            if (Funding.Instance != null)
+            {
+                var funds = isHomeworld
+                    ? WOLF_GameParameters.DepotFundsRewardHomeworldValue
+                    : WOLF_GameParameters.DepotFundsRewardValue;
+                Funding.Instance.AddFunds(funds, TransactionReasons.ContractReward);
+                Messenger.DisplayMessage(string.Format(FUNDS_ADDED_MESSAGE, funds.ToString("F0")));
+            }
+        }
+
+        public static void AddReputation(int crewPoints, bool isHomeworld)
         {
             if (Reputation.Instance != null)
             {
-                var rep = REP_PER_CREW_POINT * crewPoints;
+                var configValue = isHomeworld
+                    ? WOLF_GameParameters.CrewReputationRewardHomeworldValue
+                    : WOLF_GameParameters.CrewReputationRewardValue;
+                float rep = configValue * crewPoints;
                 Reputation.Instance.AddReputation(rep, TransactionReasons.ContractReward);
                 Messenger.DisplayMessage(string.Format(REPUTATION_ADDED_MESSAGE, rep.ToString("F0")));
             }
         }
 
-        public static void AddScience()
+        public static void AddScience(bool isHomeworld)
         {
             if (ResearchAndDevelopment.Instance != null)
             {
-                ResearchAndDevelopment.Instance.AddScience(SCIENCE_PER_BIOME, TransactionReasons.ContractReward);
-                Messenger.DisplayMessage(string.Format(SCIENCE_ADDED_MESSAGE, SCIENCE_PER_BIOME.ToString("F0")));
+                var science = isHomeworld
+                    ? WOLF_GameParameters.SurveyScienceRewardHomeworldValue
+                    : WOLF_GameParameters.SurveyScienceRewardValue;
+                ResearchAndDevelopment.Instance.AddScience(science, TransactionReasons.ContractReward);
+                Messenger.DisplayMessage(string.Format(SCIENCE_ADDED_MESSAGE, science.ToString("F0")));
             }
         }
     }

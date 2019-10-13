@@ -106,7 +106,10 @@ namespace WOLF
                 var totalCrewPoints = crewRecipe.OutputIngredients
                     .Sum(i => i.Value);
 
-                RewardsManager.AddReputation(totalCrewPoints);
+                if (totalCrewPoints > 0)
+                {
+                    RewardsManager.AddReputation(totalCrewPoints, vessel.mainBody.isHomeWorld);
+                }
             }
 
             Poof.GoPoof(vessel);
