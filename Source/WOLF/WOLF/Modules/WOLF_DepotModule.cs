@@ -87,10 +87,7 @@ namespace WOLF
                 return;
             }
 
-            bool depotAlreadyExists = _registry.HasDepot(body, biome);
-            IDepot depot = null;
-            if (depotAlreadyExists)
-                depot = _registry.GetDepot(body, biome);
+            bool depotAlreadyExists = _registry.TryGetDepot(body, biome, out IDepot depot);
 
             if (isSurvey)
             {
@@ -130,6 +127,7 @@ namespace WOLF
                 depot = _registry.CreateDepot(body, biome);
             }
 
+            var isHomeWorld = vessel.mainBody.isHomeWorld;
             if (isSurvey)
             {
                 // Survey biome
@@ -142,7 +140,7 @@ namespace WOLF
                 DisplayMessage(string.Format(SUCCESSFUL_SURVEY_MESSAGE, biome, body));
 
                 // Add rewards
-                RewardsManager.AddScience();
+                RewardsManager.AddScience(isHomeWorld);
             }
             else
             {
@@ -150,7 +148,7 @@ namespace WOLF
                 depot.Establish();
 
                 // Setup bootstrap resource streams
-                if (vessel.mainBody.isHomeWorld && vessel.situation != Situations.ORBITING)
+                if (isHomeWorld && vessel.situation != Situations.ORBITING)
                 {
                     depot.NegotiateProvider(HOME_PLANET_STARTING_RESOURCES);
                 }
@@ -163,6 +161,11 @@ namespace WOLF
 
                 DisplayMessage(string.Format(SUCCESSFUL_DEPLOYMENT_MESSAGE, biome, body));
                 Poof.GoPoof(vessel);
+
+                // Add rewards
+                RewardsManager.AddScience(isHomeWorld);
+                RewardsManager.AddDepotFunds(isHomeWorld);
+                RewardsManager.AddReputation(10, isHomeWorld);
             }
         }
 

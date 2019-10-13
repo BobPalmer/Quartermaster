@@ -171,7 +171,7 @@ namespace WOLF
                 var homeworld = FlightGlobals.GetHomeBodyName();
                 if (destinationBody == homeworld && OriginBody != destinationBody)
                 {
-                    RewardsManager.AddFunds(routePayload);
+                    RewardsManager.AddTransportFunds(routePayload);
                 }
 
                 ResetRoute();
