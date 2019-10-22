@@ -84,7 +84,7 @@ namespace WOLF
             var controlID = GUIUtility.GetControlID(FocusType.Passive);
 
             _done = false;
-            if (Event.current.GetTypeForControl(controlID) == EventType.mouseUp && _isClickedComboButton)
+            if (Event.current.GetTypeForControl(controlID) == EventType.MouseUp && _isClickedComboButton)
             {
                 _done = true;
             }
