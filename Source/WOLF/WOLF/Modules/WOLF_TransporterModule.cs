@@ -22,7 +22,7 @@ namespace WOLF
 
         private static readonly int MINIMUM_PAYLOAD = 1;
         private static readonly double ROUTE_COST_MULTIPLIER = 1d;
-        private static readonly double ROUTE_COST_ROUNDING_FLOOR = 0.1d;
+        private static readonly double ROUTE_ZERO_COST_TOLERANCE = 0.1d;
         private readonly WOLF_GuiConfirmationDialog _confirmationDialog;
 
         [KSPField(guiActive = false, guiActiveEditor = false, guiName = "Origin depot")]
@@ -92,8 +92,7 @@ namespace WOLF
 
             OriginBody = vessel.mainBody.name;
             OriginBiome = GetVesselBiome();
-            OriginDepotDisplay = string.Format("{0}:{1}", OriginBody, OriginBiome);
-            Fields["OriginDepotDisplay"].guiActive = true;
+            ShowOriginDepot();
             StartingVesselMass = vessel.totalMass;
             IsConnectedToOrigin = true;
             Messenger.DisplayMessage(ROUTE_STARTED_MESSAGE);
@@ -184,13 +183,13 @@ namespace WOLF
 
         private int CalculateRouteCost()
         {
-            var endingMass = vessel.totalMass;
             var massDelta = StartingVesselMass - vessel.totalMass;
             if (massDelta < 0)
                 return 0;
 
-            if ((massDelta - Math.Truncate(massDelta)) > ROUTE_COST_ROUNDING_FLOOR)
-                massDelta += 1d;
+            // Make sure routes that expended any fuel cost at least 1 TCred
+            if (massDelta < 1d && massDelta > ROUTE_ZERO_COST_TOLERANCE)
+                massDelta = 1d;
 
             var routeCost = Math.Round(massDelta * ROUTE_COST_MULTIPLIER, MidpointRounding.AwayFromZero);
             return Math.Max(Convert.ToInt32(routeCost), 0);
@@ -287,6 +286,7 @@ namespace WOLF
             Actions["ConnectToDepotAction"].guiName = CONNECT_TO_DESTINATION_GUI_NAME;
 
             ToggleEventButtons();
+            ShowOriginDepot();
         }
 
         private void ResetRoute()
@@ -301,13 +301,22 @@ namespace WOLF
             ToggleEventButtons();
         }
 
+        private void ShowOriginDepot()
+        {
+            if (!string.IsNullOrEmpty(OriginBody) && !string.IsNullOrEmpty(OriginBiome))
+            {
+                OriginDepotDisplay = string.Format("{0}:{1}", OriginBody, OriginBiome);
+                Fields["OriginDepotDisplay"].guiActive = true;
+            }
+        }
+
         private void ToggleEventButtons()
         {
             Events["CancelRouteEvent"].active = IsConnectedToOrigin;
             Events["ConnectToDepotEvent"].active = IsConnectedToOrigin;
             Events["ConnectToOriginEvent"].active = !IsConnectedToOrigin;
 
-            MonoUtilities.RefreshContextWindows(part);
+            MonoUtilities.RefreshPartContextWindow(part);
         }
 
         protected override void Update()

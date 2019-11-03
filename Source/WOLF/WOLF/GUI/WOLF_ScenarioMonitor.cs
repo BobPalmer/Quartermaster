@@ -36,16 +36,17 @@ namespace WOLF
         private bool _hasInitStyles = false;
         protected bool _isEditor = false;
         private GUIStyle _labelStyle;
+        private WOLF_GuiFilters _filters;
         private WOLF_PlanningMonitor _planningMonitor;
         private WOLF_RouteMonitor _routeMonitor;
         private Vector2 _scrollPos = Vector2.zero;
         private GUIStyle _scrollStyle;
         private GUIStyle _smButtonStyle;
+        private GUIStyle _closeButtonStyle;
         private string[] _tabLabels;
         private Rect _windowPosition = new Rect(300, 60, 700, 460);
         private GUIStyle _windowStyle;
         private int _windowId;
-        private GUIStyle _dividerStyle;
         private ApplicationLauncherButton _wolfButton;
         private IRegistryCollection _wolfRegistry;
         private WOLF_ScenarioModule _wolfScenario;
@@ -87,6 +88,7 @@ namespace WOLF
         {
             _wolfScenario = FindObjectOfType<WOLF_ScenarioModule>();
             _wolfRegistry = _wolfScenario.ServiceManager.GetService<IRegistryCollection>();
+            _filters = _wolfScenario.ServiceManager.GetService<WOLF_GuiFilters>();
             _routeMonitor = _wolfScenario.ServiceManager.GetService<WOLF_RouteMonitor>();
             _planningMonitor = _wolfScenario.ServiceManager.GetService<WOLF_PlanningMonitor>();
 
@@ -115,6 +117,7 @@ namespace WOLF
                 {
                     if (!hopperIds.Contains(hopper.Id))
                     {
+                        Debug.LogWarning("[WOLF] ScenarioMonitor: Hopper with ID " + hopper.Id + " was not found in game.");
                         var resourcesToRelease = new Dictionary<string, int>();
                         foreach (var input in hopper.Recipe.InputIngredients)
                         {
@@ -180,10 +183,10 @@ namespace WOLF
             {
                 fontSize = 10
             };
-            _dividerStyle = new GUIStyle
+            _closeButtonStyle = new GUIStyle(UIHelper.buttonStyle)
             {
-                margin = new RectOffset(0, 0, 4, 4),
-                fixedHeight = 1f
+                stretchWidth = true,
+                alignment = TextAnchor.MiddleCenter,
             };
 
             _hasInitStyles = true;
@@ -234,27 +237,35 @@ namespace WOLF
             GUILayout.EndHorizontal();
 
             // Display filter buttons
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Filters", _labelStyle, GUILayout.Width(70));
-            GUILayout.Label("<color=#FFD900>Coming soon...</color>", _labelStyle, GUILayout.Width(300));
-            GUILayout.EndHorizontal();
 
             // Show the UI for the currently selected tab
             switch (activeTab)
             {
                 case 0:
+                    _filters.Draw();
                     ShowDepots();
                     break;
                 case 1:
+                    _filters.Draw();
                     ShowHarvestableResources();
                     break;
                 case 2:
+                    _filters.Draw(true);
                     _scrollPos = _routeMonitor.DrawWindow(_scrollPos);
                     break;
                 case 3:
+                    _planningMonitor.RefreshCache();
                     _scrollPos = _planningMonitor.DrawWindow(_scrollPos);
                     break;
             }
+
+            // Show Close button
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("CLOSE", _closeButtonStyle))
+            {
+                GuiOff();
+            }
+            GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
 
@@ -262,14 +273,71 @@ namespace WOLF
             GUI.DragWindow();
         }
 
+        private bool IsAssembledResource(IResourceStream resource)
+        {
+            return _wolfScenario.Configuration.AssembledResourcesFilter.Contains(resource.ResourceName);
+        }
+
+        private bool IsCrewResource(IResourceStream resource)
+        {
+            return resource.ResourceName.EndsWith(WOLF_CrewModule.CREW_RESOURCE_SUFFIX);
+        }
+        
+        private bool IsLifeSupportResource(IResourceStream resource)
+        {
+            return _wolfScenario.Configuration.LifeSupportResourcesFilter.Contains(resource.ResourceName);
+        }
+
+        private bool IsHarvestableResource(IResourceStream resource)
+        {
+            return resource.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX);
+        }
+
+        private bool IsRawResource(IResourceStream resource)
+        {
+            return _wolfScenario.Configuration.AllowedHarvestableResources.Contains(resource.ResourceName);
+        }
+
+        private bool IsRefinedResource(IResourceStream resource)
+        {
+            return _wolfScenario.Configuration.RefinedResourcesFilter.Contains(resource.ResourceName);
+        }
+
+        private bool IsFilterMatch(IResourceStream resource)
+        {
+            var isMatch = false;
+            if (_filters.ShowAssembledMaterials)
+            {
+                isMatch |= IsAssembledResource(resource);
+            }
+            if (_filters.ShowCrew)
+            {
+                isMatch |= IsCrewResource(resource);
+            }
+            if (_filters.ShowLifeSupportMaterials)
+            {
+                isMatch |= IsLifeSupportResource(resource);
+            }
+            if (_filters.ShowRawMaterials)
+            {
+                isMatch |= IsRawResource(resource);
+            }
+            if (_filters.ShowRefinedMaterials)
+            {
+                isMatch |= IsRefinedResource(resource);
+            }
+
+            return isMatch;
+        }
+
         private void ShowDepots()
         {
-            ShowResources(r => !r.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX));
+            ShowResources(r => !IsHarvestableResource(r) && IsFilterMatch(r));
         }
 
         private void ShowHarvestableResources()
         {
-            ShowResources(r => r.ResourceName.EndsWith(WOLF_DepotModule.HARVESTABLE_RESOURCE_SUFFIX), "Abundance", "Harvested");
+            ShowResources(IsHarvestableResource, "Abundance", "Harvested");
         }
 
         /// <summary>
@@ -277,7 +345,7 @@ namespace WOLF
         /// </summary>
         private void ShowResources(Func<IResourceStream, bool> resourceFilter, string incomingHeaderLabel = "Incoming", string outgoingHeaderLabel = "Outgoing", string availableHeaderLabel = "Available")
         {
-            _scrollPos = GUILayout.BeginScrollView(_scrollPos, _scrollStyle, GUILayout.Width(680), GUILayout.Height(800));
+            _scrollPos = GUILayout.BeginScrollView(_scrollPos, _scrollStyle, GUILayout.Width(680), GUILayout.Height(760));
             GUILayout.BeginVertical();
 
             try
@@ -302,6 +370,18 @@ namespace WOLF
                 GUILayout.EndHorizontal();
 
                 var depots = _wolfRegistry.GetDepots();
+                if (!string.IsNullOrEmpty(_filters.SelectedOriginDepotBody))
+                {
+                    depots = depots
+                        .Where(d => d.Body == _filters.SelectedOriginDepotBody)
+                        .ToList();
+                }
+                if (!string.IsNullOrEmpty(_filters.SelectedOriginDepotBiome))
+                {
+                    depots = depots
+                        .Where(d => d.Biome == _filters.SelectedOriginDepotBiome)
+                        .ToList();
+                }
                 if (depots != null && depots.Any())
                 {
                     var depotsByPlanet = depots
@@ -319,7 +399,7 @@ namespace WOLF
                             {
                                 _depotDisplayStatus.Add(depot, false);
                             }
-
+                            
                             var resources = depot.GetResources()
                                 .Where(resourceFilter)
                                 .OrderBy(r => r.ResourceName);

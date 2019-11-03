@@ -27,7 +27,7 @@ namespace WOLF
 
         public Vector2 DrawWindow(Vector2 scrollPosition)
         {
-            var newScrollPosition = GUILayout.BeginScrollView(scrollPosition, _scrollStyle, GUILayout.Width(680), GUILayout.Height(800));
+            var newScrollPosition = GUILayout.BeginScrollView(scrollPosition, _scrollStyle, GUILayout.Width(680), GUILayout.Height(760));
             GUILayout.BeginVertical();
 
             try
