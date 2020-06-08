@@ -20,7 +20,10 @@
             if (Reputation.Instance != null)
             {
                 var endingReputation = Reputation.Instance.reputation;
-                Reputation.Instance.AddReputation(startingReputation - endingReputation, TransactionReasons.None);
+                if (endingReputation + 0.0001f < startingReputation)
+                {
+                    Reputation.Instance.AddReputation(startingReputation - endingReputation, TransactionReasons.None);
+                }
             }
         }
     }

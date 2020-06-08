@@ -66,14 +66,6 @@
       <HintPath>..\..\..\..\..\KSP_DEV\KSP_x64_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.InputModule">
-      <HintPath>..\..\..\..\..\KSP_DEV\KSP_x64_Data\Managed\UnityEngine.InputModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>..\..\..\..\..\KSP_DEV\KSP_x64_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>..\..\..\..\..\KSP_DEV\KSP_x64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
@@ -99,6 +91,7 @@
     <Compile Include="GUI\Helpers\Utilities.cs" />
     <Compile Include="GUI\Helpers\Window.cs" />
     <Compile Include="GUI\WOLF_GuiConfirmationDialog.cs" />
+    <Compile Include="GUI\WOLF_GuiFilters.cs" />
     <Compile Include="GUI\WOLF_GuiManageTransfers.cs" />
     <Compile Include="GUI\WOLF_PlanningMonitor.cs" />
     <Compile Include="GUI\WOLF_RouteMonitor.cs" />
@@ -143,7 +136,6 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>D:\Games\pdb2mdb\pdb2mdb.exe $(TargetFileName)</PostBuildEvent>
   </PropertyGroup>
 </Project>

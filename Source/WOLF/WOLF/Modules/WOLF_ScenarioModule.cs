@@ -22,20 +22,32 @@ namespace WOLF
             var configNodes = GameDatabase.Instance.GetConfigNodes("WOLF_CONFIGURATION");
             var allowedResources = new List<string>();
             var blacklistedResources = new List<string>();
+            var assembledResourcesFilter = new List<string>();
+            var lifeSupportResourcesFilter = new List<string>();
+            var refinedResourcesFilter = new List<string>();
 
             foreach (var node in configNodes)
             {
                 var configFromFile = ResourceUtilities.LoadNodeProperties<ConfigurationFromFile>(node);
-                var resources = Configuration.ParseHarvestableResources(configFromFile.AllowedHarvestableResources);
+                var harvestableResources = Configuration.ParseHarvestableResources(configFromFile.AllowedHarvestableResources);
                 var blacklist = Configuration.ParseHarvestableResources(configFromFile.BlacklistedHomeworldResources);
+                var assembledResources = Configuration.ParseHarvestableResources(configFromFile.AssembledResourcesFilter);
+                var lifeSupportResources = Configuration.ParseHarvestableResources(configFromFile.LifeSupportResourcesFilter);
+                var refinedResources = Configuration.ParseHarvestableResources(configFromFile.RefinedResourcesFilter);
 
-                allowedResources.AddRange(resources);
+                allowedResources.AddRange(harvestableResources);
                 blacklistedResources.AddRange(blacklist);
+                assembledResourcesFilter.AddRange(assembledResources);
+                lifeSupportResourcesFilter.AddRange(lifeSupportResources);
+                refinedResourcesFilter.AddRange(refinedResources);
             }
 
             var config = new Configuration();
             config.SetHarvestableResources(allowedResources);
             config.SetBlacklistedHomeworldResources(blacklistedResources);
+            config.SetAssembledResourcesFilter(assembledResourcesFilter);
+            config.SetLifeSupportResourcesFilter(lifeSupportResourcesFilter);
+            config.SetRefinedResourcesFilter(refinedResourcesFilter);
 
             return config;
         }
@@ -47,6 +59,7 @@ namespace WOLF
             // Setup dependency injection for WOLF services
             var services = new ServiceCollection();
             services.AddSingletonService<IRegistryCollection, ScenarioPersister>();
+            services.AddSingletonService<WOLF_GuiFilters>();
             services.AddService<WOLF_PlanningMonitor>();
             services.AddService<WOLF_RouteMonitor>();
 

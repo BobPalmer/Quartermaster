@@ -157,7 +157,7 @@ namespace WOLF
             var nextRecipeName = _recipeOptions[_nextRecipeIndex].RecipeDisplayName;
             Events["SwapRecipe"].guiName = selectedRecipeName + " => " + nextRecipeName;
 
-            MonoUtilities.RefreshContextWindows(part);
+            MonoUtilities.RefreshPartContextWindow(part);
         }
     }
 }

@@ -20,6 +20,8 @@ namespace WOLF
         private bool _hasHoppers = false;
         private bool _hasNonHoppers = false;
 
+        public bool HasDepots => !(_depots == null || _depots.Count < 1);
+
         public WOLF_PlanningMonitor(IRegistryCollection depotRegistry)
         {
             _depotRegistry = depotRegistry;
@@ -63,7 +65,7 @@ namespace WOLF
                 // Setup gui style for combo boxes
                 var listStyle = new GUIStyle();
                 listStyle.normal.textColor = Color.white;
-                listStyle.onHover.background = new Texture2D(2, 2);
+                listStyle.onHover.background = new Texture2D(20, 100);
                 listStyle.hover.background = listStyle.onHover.background;
                 listStyle.padding.left = 4;
                 listStyle.padding.right = 4;
@@ -95,45 +97,53 @@ namespace WOLF
 
         public Vector2 DrawWindow(Vector2 scrollPosition)
         {
-            var newScrollPosition = GUILayout.BeginScrollView(
-                scrollPosition,
-                UIHelper.scrollStyle,
-                GUILayout.Width(680),
-                GUILayout.Height(830));
-            GUILayout.BeginVertical();
-
-            try
+            if (HasDepots)
             {
+                GUILayout.BeginVertical();
+
                 // Show depot selection section
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Depot", UIHelper.labelStyle, GUILayout.Width(80));
 
-                if (_depots.Count < 1)
+                // Display Previous button
+                if (GUILayout.Button(UIHelper.leftArrowSymbol, UIHelper.buttonStyle, GUILayout.Width(30), GUILayout.Height(20)))
                 {
-                    GUILayout.EndHorizontal();  // depot selection section
+                    SelectPreviousDepot();
+                    _depotDropdown.SelectedItemIndex = _selectedDepotIndex;
+                }
+
+                // Display depot dropdown
+                _depotDropdown.Show();
+
+                // Display Next button
+                if (GUILayout.Button(UIHelper.rightArrowSymbol, UIHelper.buttonStyle, GUILayout.Width(30), GUILayout.Height(20)))
+                {
+                    SelectNextDepot();
+                    _depotDropdown.SelectedItemIndex = _selectedDepotIndex;
+                }
+
+                GUILayout.EndHorizontal();
+                GUILayout.EndVertical();
+
+                _depotDropdown.ShowRest();
+            }
+
+            var newScrollPosition = GUILayout.BeginScrollView(
+                scrollPosition,
+                UIHelper.scrollStyle,
+                GUILayout.Width(680),
+                GUILayout.Height(785));
+            GUILayout.BeginVertical();
+
+            try
+            {
+                if (!HasDepots)
+                {
                     GUILayout.Label(string.Empty);
                     GUILayout.Label(NO_DEPOTS_MESSAGE);
                 }
                 else
                 {
-                    // Display Previous button
-                    if (GUILayout.Button(UIHelper.leftArrowSymbol, UIHelper.buttonStyle, GUILayout.Width(30), GUILayout.Height(20)))
-                    {
-                        SelectPreviousDepot();
-                        _depotDropdown.SelectedItemIndex = _selectedDepotIndex;
-                    }
-
-                    // Display depot dropdown
-                    _depotDropdown.Show();
-
-                    // Display Next button
-                    if (GUILayout.Button(UIHelper.rightArrowSymbol, UIHelper.buttonStyle, GUILayout.Width(30), GUILayout.Height(20)))
-                    {
-                        SelectNextDepot();
-                        _depotDropdown.SelectedItemIndex = _selectedDepotIndex;
-                    }
-                    GUILayout.EndHorizontal();  // depot selection section
-
                     // Create some visual separation between sections
                     GUILayout.Label(string.Empty);
 
@@ -265,8 +275,6 @@ namespace WOLF
                             GUILayout.EndHorizontal();
                         }
                     }
-
-                    _depotDropdown.ShowRest();
                 }
             }
             catch (Exception ex)
@@ -326,6 +334,11 @@ namespace WOLF
                 .ToDictionary(g => g.Key, g => g.Sum(i => i.Value));
 
             return new Recipe(inputIngredients, outputIngredients);
+        }
+
+        public void RefreshCache()
+        {
+            SelectDepot(_selectedDepotIndex);
         }
 
         private void SelectDepot(int index)

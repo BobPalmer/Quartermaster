@@ -43,10 +43,10 @@ namespace WOLF
                 Longitude = longitude
             };
             var radiusMultiplier = Math.Sqrt(FlightGlobals.Bodies[bodyIndex].Radius) / RESOURCE_ABUNDANCE_RADIUS_MULT;
-            var bodyMultiplier = 1;
+            var bodyMultiplier = 5;
             if (!FlightGlobals.currentMainBody.isHomeWorld)
             {
-                bodyMultiplier = Math.Max(1, WOLF_GameParameters.ResourceAbundanceMultiplierValue);
+                bodyMultiplier = Math.Max(5, WOLF_GameParameters.ResourceAbundanceMultiplierValue);
             }
 
             var resourceList = new Dictionary<string, int>();
@@ -60,7 +60,10 @@ namespace WOLF
                     abundanceRequest.ResourceName = resource;
 
                     var baseAbundance = ResourceMap.Instance.GetAbundance(abundanceRequest);
-                    int abundance = (int)(baseAbundance * RESOURCE_ABUNDANCE_MULTIPLIER * radiusMultiplier * bodyMultiplier);
+                    int abundance = (int)Math.Round(
+                        baseAbundance * RESOURCE_ABUNDANCE_MULTIPLIER * radiusMultiplier * bodyMultiplier,
+                        MidpointRounding.AwayFromZero
+                    );
                     if (abundance > RESOURCE_ABUNDANCE_FLOOR)
                     {
                         abundance = Math.Min(abundance, RESOURCE_ABUNDANCE_CEILING);
@@ -68,6 +71,12 @@ namespace WOLF
                     else
                     {
                         abundance = 0;
+                    }
+
+                    // Make abundance a multiple of 5
+                    if (abundance > 0 && abundance % 5 != 0)
+                    {
+                        abundance = 5 * (int)Math.Round(abundance / 5d, MidpointRounding.AwayFromZero);
                     }
 
                     if (allowedResources.Contains(resource))

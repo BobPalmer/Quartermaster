@@ -14,7 +14,7 @@ namespace WOLF
         private static string NO_ROUTES_MESSAGE = "#autoLOC_USI_WOLF_TRANSPORTER_UI_NO_ROUTES_MESSAGE"; // "There are currently no established routes.";
         private static readonly string ROUTE_NAME_TEMPLATE = " {0}:{1} => {2}:{3} ";
 
-        private IRegistryCollection _registry;
+        private readonly IRegistryCollection _registry;
         private string _transferAmountText = string.Empty;
         private ComboBox _routeComboBox;
         private int _selectedRouteIndex = 0;

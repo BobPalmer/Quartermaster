@@ -192,6 +192,7 @@ namespace WOLF
 
                 if (depot == null || depot.Body != body || depot.Biome != biome)
                 {
+                    Debug.LogWarning("[WOLF] Hopper lost connection to its depot.");
                     Messenger.DisplayMessage(LOST_CONNECTION_MESSAGE);
                     StopResourceConverter();
                     ReleaseResources();
@@ -213,6 +214,7 @@ namespace WOLF
 
         public void OnVesselDestroyed()
         {
+            Debug.Log("[WOLF] Vessel with hopper attached was destroyed.");
             ReleaseResources();
             vessel.OnJustAboutToBeDestroyed -= OnVesselDestroyed;
             GameEvents.OnVesselRecoveryRequested.Remove(OnVesselRecovered);
@@ -222,6 +224,7 @@ namespace WOLF
         {
             if (vessel == this.vessel)
             {
+                Debug.Log("[WOLF] Vessel with hopper attached was recovered.");
                 OnVesselDestroyed();
             }
         }
