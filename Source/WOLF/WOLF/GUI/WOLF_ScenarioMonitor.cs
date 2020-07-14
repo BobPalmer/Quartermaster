@@ -1,5 +1,6 @@
 ﻿using KSP.UI.Screens;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -109,6 +110,16 @@ namespace WOLF
                 _childWindows.Add(_routeMonitor.ManageTransfersGui);
 
             // Check for missing hoppers
+            StartCoroutine(CheckForMissingHoppers());
+        }
+
+        private IEnumerator CheckForMissingHoppers()
+        {
+            while (!_wolfRegistry.IsLoaded)
+            {
+                yield return null;
+            }
+
             var hoppers = _wolfRegistry.GetHoppers();
             if (hoppers.Count > 0)
             {

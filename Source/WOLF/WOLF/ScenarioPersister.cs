@@ -9,6 +9,8 @@ namespace WOLF
         public static readonly string HOPPERS_NODE_NAME = "HOPPERS";
         public static readonly string ROUTES_NODE_NAME = "ROUTES";
 
+        public bool IsLoaded { get; protected set; } = false;
+
         protected List<IDepot> _depots { get; private set; } = new List<IDepot>();
         protected List<HopperMetadata> _hoppers { get; private set; } = new List<HopperMetadata>();
         protected List<IRoute> _routes { get; private set; } = new List<IRoute>();
@@ -25,12 +27,12 @@ namespace WOLF
 
         public IDepot CreateDepot(string body, string biome)
         {
-            if (HasDepot(body, biome))
+            if (TryGetDepot(body, biome, out IDepot depot))
             {
-                return GetDepot(body, biome);
+                return depot;
             }
 
-            var depot = new Depot(body, biome);
+            depot = new Depot(body, biome);
             _depots.Add(depot);
 
             return depot;
@@ -94,7 +96,6 @@ namespace WOLF
             depot = _depots.Where(d => d.Body == body && d.Biome == biome).FirstOrDefault();
 
             return depot != null;
-
         }
 
         public List<IDepot> GetDepots()
@@ -122,7 +123,7 @@ namespace WOLF
             return _routes.ToList() ?? new List<IRoute>();
         }
 
-        public bool HasDepot(string body, string biome)
+        public bool HasEstablishedDepot(string body, string biome)
         {
             return _depots.Any(d => d.Body == body && d.Biome == biome && d.IsEstablished);
         }
@@ -138,6 +139,8 @@ namespace WOLF
 
         public void OnLoad(ConfigNode node)
         {
+            IsLoaded = false;
+
             if (node.HasNode(DEPOTS_NODE_NAME))
             {
                 var wolfNode = node.GetNode(DEPOTS_NODE_NAME);
@@ -181,6 +184,8 @@ namespace WOLF
                     _routes.Add(route);
                 }
             }
+
+            IsLoaded = true;
         }
 
         public void OnSave(ConfigNode node)

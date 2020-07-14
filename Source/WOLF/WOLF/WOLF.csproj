@@ -109,6 +109,7 @@
     <Compile Include="Modules\WOLF_CrewModule.cs" />
     <Compile Include="Modules\WOLF_DepotModule.cs" />
     <Compile Include="Modules\WOLF_HarvesterModule.cs" />
+    <Compile Include="Modules\WOLF_HopperBay.cs" />
     <Compile Include="Modules\WOLF_HopperModule.cs" />
     <Compile Include="Modules\WOLF_HopperSwapOption.cs" />
     <Compile Include="Modules\WOLF_RecipeOption.cs" />
@@ -136,6 +137,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>D:\Games\pdb2mdb\pdb2mdb.exe $(TargetFileName)</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

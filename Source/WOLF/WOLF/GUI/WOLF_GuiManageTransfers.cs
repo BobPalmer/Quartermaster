@@ -22,7 +22,6 @@ namespace WOLF
         private Vector2 _availableResourceScrollViewPosition = Vector2.zero;
         private Vector2 _transferResourceScrollViewPosition = Vector2.zero;
         private string _selectedResource;
-        private Dictionary<string, int> _routeResources;
         private List<IResourceStream> _originDepotResources;
         private List<IResourceStream> _destinationDepotResources;
         private Dictionary<string, IRoute> _routes;
@@ -408,7 +407,6 @@ namespace WOLF
             _transferAmountText = string.Empty;
             _selectedRouteIndex = routeIndex;
             _selectedRoute = _routes.ToArray()[routeIndex].Value;
-            _routeResources = _selectedRoute.GetResources();
             GetAvailableResources();
         }
 

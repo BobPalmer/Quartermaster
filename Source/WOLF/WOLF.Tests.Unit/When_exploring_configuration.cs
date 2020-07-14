@@ -26,18 +26,6 @@ namespace WOLF.Tests.Unit
         }
 
         [Fact]
-        public void Returns_default_resources_when_empty_string_given()
-        {
-            var configuration = new Configuration();
-
-            var resources = Configuration.ParseHarvestableResources("");
-
-            Assert.NotNull(resources);
-            Assert.NotEmpty(resources);
-            Assert.Equal(Configuration.DefaultHarvestableResources, resources);
-        }
-
-        [Fact]
         public void Can_set_harvestable_resources()
         {
             var configuration = new Configuration();

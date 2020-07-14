@@ -25,9 +25,10 @@ namespace WOLF.Tests.Unit
             var registry = new TestPersister();
             var expectedBody = "Mun";
             var expectedBiome = "East Crater";
-            registry.CreateDepot(expectedBody, expectedBiome);
+            var createdDepot = registry.CreateDepot(expectedBody, expectedBiome);
+            createdDepot.Establish();
 
-            var hasDepot = registry.HasDepot(expectedBody, expectedBiome);
+            var hasDepot = registry.HasEstablishedDepot(expectedBody, expectedBiome);
             var depot = registry.GetDepot(expectedBody, expectedBiome);
 
             Assert.True(hasDepot);
@@ -42,9 +43,10 @@ namespace WOLF.Tests.Unit
             var expectedBody = "Mun";
             var expectedBiome1 = "East Crater";
             var expectedBiome2 = "Farside Crater";
-            var expectedDepots = new List<IDepot>();
             var expectedDepot1 = registry.CreateDepot(expectedBody, expectedBiome1);
             var expectedDepot2 = registry.CreateDepot(expectedBody, expectedBiome2);
+            expectedDepot1.Establish();
+            expectedDepot2.Establish();
 
             var depots = registry.GetDepots();
 
@@ -65,7 +67,7 @@ namespace WOLF.Tests.Unit
 
             var secondDepot = registry.CreateDepot(expectedBody, expectedBiome);
 
-            Assert.Equal(firstDepot, secondDepot);
+            Assert.Same(firstDepot, secondDepot);
             var depots = registry.Depots.Where(d => d.Body == expectedBody && d.Biome == expectedBiome);
             Assert.True(depots.Count() == 1);
         }

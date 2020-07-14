@@ -28,11 +28,16 @@ namespace WOLF
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false)]
         public string HopperId;
 
+        // This value should match the moduleIndex value of the corresponding
+        // WOLF_HopperBay (aka USI_SwappableBay.moduleIndex) in the part config file
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false)]
+        public int ModuleIndex;
+
         [KSPField]
         public string InputResources = string.Empty;
 
         [KSPField(isPersistant = true)]
-        private bool IsConnectedToDepot = false;
+        public bool IsConnectedToDepot = false;
 
         [KSPField(isPersistant = true)]
         private string DepotBiome = string.Empty;
@@ -63,7 +68,7 @@ namespace WOLF
                 Messenger.DisplayMessage(Messenger.INVALID_ORBIT_SITUATION_MESSAGE);
                 return;
             }
-            if (!_registry.HasDepot(body, biome))
+            if (!_registry.HasEstablishedDepot(body, biome))
             {
                 Messenger.DisplayMessage(Messenger.MISSING_DEPOT_MESSAGE);
                 return;
