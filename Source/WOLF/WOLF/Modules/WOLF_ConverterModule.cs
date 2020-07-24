@@ -25,7 +25,7 @@ namespace WOLF
             {
                 return Messenger.INVALID_ORBIT_SITUATION_MESSAGE;
             }
-            if (!_registry.HasDepot(body, biome))
+            if (!_registry.HasEstablishedDepot(body, biome))
             {
                 return Messenger.MISSING_DEPOT_MESSAGE;
             }
