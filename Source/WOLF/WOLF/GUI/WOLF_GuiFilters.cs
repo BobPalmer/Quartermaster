@@ -397,19 +397,31 @@ namespace WOLF
 
             // Show origin depot dropdowns
             GUILayout.Label($"<color=#FFD900>{ORIGIN_LABEL}</color>", _labelStyle, GUILayout.Width(65));
-            _originBodyDropdown.Show();
-            _originBodyDropdown.ShowRest();
-            OriginBiomeDropdown.Show();
-            OriginBiomeDropdown.ShowRest();
+            if (_originBodyDropdown != null)
+            {
+                _originBodyDropdown.Show();
+                _originBodyDropdown.ShowRest();
+            }
+            if (OriginBiomeDropdown != null)
+            {
+                OriginBiomeDropdown.Show();
+                OriginBiomeDropdown.ShowRest();
+            }
 
             // Show destination depot dropdowns
             if (showDestinationDepot)
             {
                 GUILayout.Label($"<color=#FFD900>{DESTINATION_LABEL}</color>", _labelStyle, GUILayout.Width(65));
-                _destinationBodyDropdown.Show();
-                _destinationBodyDropdown.ShowRest();
-                DestinationBiomeDropdown.Show();
-                DestinationBiomeDropdown.ShowRest();
+                if (_destinationBodyDropdown != null)
+                {
+                    _destinationBodyDropdown.Show();
+                    _destinationBodyDropdown.ShowRest();
+                }
+                if (DestinationBiomeDropdown != null)
+                {
+                    DestinationBiomeDropdown.Show();
+                    DestinationBiomeDropdown.ShowRest();
+                }
             }
 
             GUILayout.EndHorizontal();
