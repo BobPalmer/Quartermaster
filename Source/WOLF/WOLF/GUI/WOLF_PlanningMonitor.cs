@@ -127,14 +127,12 @@ namespace WOLF
 
                 _depotDropdown.ShowRest();
             }
-
             var newScrollPosition = GUILayout.BeginScrollView(
                 scrollPosition,
                 UIHelper.scrollStyle,
                 GUILayout.Width(680),
                 GUILayout.Height(785));
             GUILayout.BeginVertical();
-
             try
             {
                 if (!HasDepots)
@@ -290,7 +288,6 @@ namespace WOLF
                 GUILayout.EndVertical();
                 GUILayout.EndScrollView();
             }
-
             return newScrollPosition;
         }
 
@@ -343,6 +340,9 @@ namespace WOLF
 
         private void SelectDepot(int index)
         {
+            if (!HasDepots)
+                return;
+
             _selectedDepotIndex = index;
             var depot = _depots[index];
             CacheDepotResources(depot);
